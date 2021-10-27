@@ -27,40 +27,40 @@ def add(id,name,amount):
   cur = conn.cursor()
   cur.execute("SELECT * FROM warns")
   rows = cur.fetchall()
-  if id not in rows:
-      return -1
-  for x in rows:
-    if x[0] == id:
-      y = x
-      break
-    else:
-      continue
-  oldvalue = y[2] 
-  value = y[2]+amount
-  cur.execute(f"UPDATE warns SET amount={value}, WHERE id={id}")
+  cur.execute(f"SELECT * FROM warns WHERE id={id}") 
+  rows = cur.fetchall()
+  if rows == []:
+    return -1
+  print(rows)
+  oldvalue = rows[0]
+  oldvalue = oldvalue[2]
+  value = rows[0][2]+amount
+  cur.execute(f"UPDATE warns SET amount=? WHERE id=?",(value,id))
   conn.commit()
   conn.close()
   mylist = [oldvalue,value,amount]
-  return value
+  return mylist
 
 def remove(id,name,amount):
   conn = sqlite3.connect("warnings.db")
   cur = conn.cursor()
   cur.execute("SELECT * FROM warns")
   rows = cur.fetchall()
-  if id not in rows:
-      return -1
-  for x in rows:
-    if x[0] == id:
-      y = x
-      break
-    else:
-      continue
-  value = y[2]-amount
-  cur.execute(f"UPDATE warns SET amount={value}, WHERE id={id}")
+  cur.execute(f"SELECT * FROM warns WHERE id={id}") 
+  rows = cur.fetchall()
+  if rows == []:
+    return -1
+  print(rows)
+  oldvalue = rows[0]
+  oldvalue = oldvalue[2]
+  value = rows[0][2]-amount
+  if value < 0:
+    return -2
+  cur.execute(f"UPDATE warns SET amount=? WHERE id=?",(value,id))
   conn.commit()
   conn.close()
-  return value
+  mylist = [oldvalue,value,amount]
+  return mylist
 def view(id,name):
     conn = sqlite3.connect("warnings.db")
     cur = conn.cursor()

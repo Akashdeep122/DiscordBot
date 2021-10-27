@@ -1,4 +1,4 @@
-kimport discord
+import discord
 from discord.ext import commands
 from replit import db
 import os
@@ -16,6 +16,7 @@ from PIL import Image
 from io import BytesIO
 from PIL import ImageOps
 from PIL import ImageEnhance
+import Warnings
 
 intents = discord.Intents.default()
 intents.members = True
@@ -2047,6 +2048,7 @@ async def promote(ctx,member:discord.Member=None):
     await ctx.send("The user is Above Admin or has higher higharchy")
     return
   await member.add_roles(role)
+  print(role)
   embed = makeembed("Promotion!!!",f"{member.mention} got promoted to {role.mention}")
   await ctx.send(embed=embed)
 
@@ -2099,17 +2101,6 @@ async def demote(ctx,member:discord.Member=None):
   embed = makeembed("Demotion!!!",f"{member.mention} got demoted from {role.mention} :( So Sad.")
   await ctx.send(embed=embed)
 
-@client.command()
-async def makenew(ctx,member : discord.Member = None,amount : int =None):
-  if member == None:
-    await ctx.send("Please mention a Member")
-  if amount == None:
-    amount = 0 
-  value = Warnings.insert(member.id,member.name,amount)
-  if value == -1:
-    await ctx.send("The Member Already Exists")
-    return
-  await ctx.send("The Member is Created Successfully")
 
 @client.command()
 async def view(ctx,member : discord.Member = None):
@@ -2142,19 +2133,22 @@ def seperate(amt):
   except:
     return -2
   val = amt[-1]
+  val = int(val)
   amt = allval * 10**val
   
-  
+  print(amt)
   return amt
 
 
 
-@client.command()
+@client.command(aliases = ['adono'])
 async def adddono(ctx,member : discord.Member = None,amt:str=None):
   if member == None:
     await ctx.send("Please Mention a Member")
+    return
   if amt == None:
     await ctx.send("Please Mention a Amount As well")
+    return
   if "e" in amt:
     amt = seperate(amt)
     if amt == -2:
@@ -2166,8 +2160,8 @@ async def adddono(ctx,member : discord.Member = None,amt:str=None):
     except:
       await ctx.send("Send a Number Please")
       return
-  
-  value = Warnings.add(member.id,member.name,amt)
+  print(member.id)
+  value = Warnings.add(int(member.id),member.name,amt)
   if value == -1:
       await ctx.send("The User Has not been defined Please define the member using the makenew cmd")
       return
@@ -2176,13 +2170,67 @@ async def adddono(ctx,member : discord.Member = None,amt:str=None):
   amount = value[2]
 
   embed = makeembed("Member Donated!!!!",
-	                      f"{member.name} Has Donated {value}\n Old donations : {oldvalue} \n Updated Donations : {newvalue}")
+	                      f"{member.name} Has Donated {amount}\n Old donations : {oldvalue} \n Updated Donations : {newvalue}")
   embed.set_footer(
       text=f'{member.name}\'s Donations',
 	    icon_url=
 	    f'{member.avatar_url}'
 	    )
   await ctx.send(embed=embed)
+
+@client.command(aliases=['remdono','rdono'])
+async def removedono(ctx,member : discord.Member = None,amt:str=None):
+  if member == None:
+    await ctx.send("Please Mention a Member")
+    return
+  if amt == None:
+    await ctx.send("Please Mention a Amount As well")
+    return
+  if "e" in amt:
+    amt = seperate(amt)
+    if amt == -2:
+      await ctx.send("Please mention a valid Number")
+      return
+  else:
+    try:
+      amt = int(amt)
+    except:
+      await ctx.send("Send a Number Please")
+      return
+  print(member.id)
+  value = Warnings.remove(int(member.id),member.name,amt)
+  if value == -1:
+      await ctx.send("The User Has not been defined Please define the member using the makenew cmd")
+      return
+  if value == -2:
+      await ctx.send("This remove will turn his donations in negative, i cant do it")
+      return
+  oldvalue = value[0]
+  newvalue = value[1]
+  amount = value[2]
+
+  embed = makeembed("Member Donation Remove!!!!",
+	                      f"{member.name}'s donations got removed by {amount}\n Old donations : {oldvalue} \n Updated Donations : {newvalue}")
+  embed.set_footer(
+      text=f'{member.name}\'s Donations',
+	    icon_url=
+	    f'{member.avatar_url}'
+	    )
+  await ctx.send(embed=embed)
+
+@client.command()
+async def makenew(ctx,member : discord.Member = None,amount : str=None):
+  if member == None:
+    await ctx.send("Please mention a Member")
+  if amount == None:
+    amount = 0.0
+  if "e" in amount:
+    amount = seperate(amount)
+  value = Warnings.insert(member.id,member.name,amount)
+  if value == -1:
+    await ctx.send("The Member Already Exists")
+    return
+  await ctx.send("The Member is Created Successfully")
 
 
 keep_alive()
