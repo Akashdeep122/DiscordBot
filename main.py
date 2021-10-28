@@ -462,9 +462,13 @@ async def help(ctx):
 		em.add_field(
 		    name="<:ban_hammer:869070330222743592> Utility",
 		    value=
-		    "```ping,prefix,giveawaystart,partner,eventlock,eventunlock,snipe,remind,dmremind```",
+		    "```ping,prefix,giveawaystart,partner,eventlock,eventunlock,snipe,dmremind```",
 		    inline=False)
-
+		em.add_field(
+		    name="💸 Donations",
+		    value=
+		    "```view,adddono,removedono,makenew```",
+		    inline=False)
 		em.add_field(
 		    name="<:Popcorn:868511638435811331> Fun",
 		    value=
@@ -1362,7 +1366,7 @@ async def nuke(ctx):
     await member.add_roles(var)
     await mymsg.edit(embed=nukeend)"""
 
-
+@client.event
 async def on_guild_join(guild):
 	with open("prefixes.json") as f:
 		prefixes = json.load(f)
@@ -1373,7 +1377,7 @@ async def on_guild_join(guild):
 	with open('prefixes.json', 'w') as f:
 		json.dump(prefixes, f, indent=2)
 
-
+@client.event
 async def on_guild_remove(guild):
 	with open("prefixes.json") as f:
 		prefixes = json.load(f)
@@ -1516,7 +1520,10 @@ async def battlestart(ctx):
   b = 0
   while (b <= 30):
     b = time.time() - a
-    response = await client.wait_for('message',check=check)
+    try:
+      response = await client.wait_for('message',check=check,timeout=30)
+    except:
+      continue
     if response.content == prefixes[str(ctx.guild.id)]+"battlejoin":
       Name = response.author.name
       Names[Name] = 50
@@ -1550,9 +1557,9 @@ async def battlestart(ctx):
         else:
           val2 = "Looks like a winner is to be announced"
         if val == None:
-          val = "<:872114295238967306:sorry> Someone Killed someone but The System Could'nt retrive it"
+          val = "<:872114295238967306:sorry:> Someone Killed someone but The System Could'nt retrive it"
         if val2 == None:
-          val2 = "<:872114295238967306:sorry> Someone Killed someone but The System Could'nt retrive it"
+          val2 = "<:872114295238967306:sorry:> Someone Killed someone but The System Could'nt retrive it"
         hello = makeembed(title="**Match in Progress**",
 				                  description=f"**{val}\n {val2}**")
         await ctx.send(embed=hello)
@@ -2231,6 +2238,8 @@ async def makenew(ctx,member : discord.Member = None,amount : str=None):
     await ctx.send("The Member Already Exists")
     return
   await ctx.send("The Member is Created Successfully")
+
+
 
 
 keep_alive()

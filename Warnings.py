@@ -44,8 +44,6 @@ def add(id,name,amount):
 def remove(id,name,amount):
   conn = sqlite3.connect("warnings.db")
   cur = conn.cursor()
-  cur.execute("SELECT * FROM warns")
-  rows = cur.fetchall()
   cur.execute(f"SELECT * FROM warns WHERE id={id}") 
   rows = cur.fetchall()
   if rows == []:
