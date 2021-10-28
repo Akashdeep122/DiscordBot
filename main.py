@@ -2126,12 +2126,13 @@ async def view(ctx,member : discord.Member = None):
         continue
     value = y[2]
     embed = makeembed("View Member Donations!!!",
-	                      f"This Person Has Donated {value} dmc in Dank Island")
+	                      f"This Person Has Donated **{value}** dmc in Dank Island")
     embed.set_footer(
       text=f'{member.name}\'s Donations',
 	    icon_url=
 	    f'{member.avatar_url}'
 	    )
+    embed.set_thumbnail(url="https://cdn.discordapp.com/icons/821575403855544370/a_85c6630c72154018ecc7740c58411dea.gif?size=128")
     await ctx.send(embed=embed)
 
 def seperate(amt):
@@ -2148,7 +2149,7 @@ def seperate(amt):
 
 
 
-@client.command(aliases = ['adono'])
+@client.command(aliases = ['adono','ad'])
 async def adddono(ctx,member : discord.Member = None,amt:str=None):
   if member == None:
     await ctx.send("Please Mention a Member")
@@ -2161,11 +2162,17 @@ async def adddono(ctx,member : discord.Member = None,amt:str=None):
     if amt == -2:
       await ctx.send("Please mention a valid Number")
       return
+  elif "k" in amt:
+    amt = amt.replace("k","")
+    amt = float(amt)*1000
+  elif "m" in amt:
+    amt = amt.replace("m","")
+    amt = float(amt)*1000000
   else:
     try:
       amt = int(amt)
     except:
-      await ctx.send("Send a Number Please")
+      await ctx.send("Send a valid Number Please")
       return
   print(member.id)
   value = Warnings.add(int(member.id),member.name,amt)
@@ -2177,15 +2184,16 @@ async def adddono(ctx,member : discord.Member = None,amt:str=None):
   amount = value[2]
 
   embed = makeembed("Member Donated!!!!",
-	                      f"{member.name} Has Donated {amount}\n Old donations : {oldvalue} \n Updated Donations : {newvalue}")
+	                      f"{member.name} Has Donated **{int(amount)}**\n Old donations : **{int(oldvalue)}** \n Updated Donations : **{int(newvalue)}**")
   embed.set_footer(
       text=f'{member.name}\'s Donations',
 	    icon_url=
 	    f'{member.avatar_url}'
 	    )
+  embed.set_thumbnail(url="https://cdn.discordapp.com/icons/821575403855544370/a_85c6630c72154018ecc7740c58411dea.gif?size=128")
   await ctx.send(embed=embed)
 
-@client.command(aliases=['remdono','rdono'])
+@client.command(aliases=['rmdono','rdono','rm'])
 async def removedono(ctx,member : discord.Member = None,amt:str=None):
   if member == None:
     await ctx.send("Please Mention a Member")
@@ -2198,6 +2206,12 @@ async def removedono(ctx,member : discord.Member = None,amt:str=None):
     if amt == -2:
       await ctx.send("Please mention a valid Number")
       return
+  elif "k" in amt:
+    amt = amt.replace("k","")
+    amt = float(amt)*1000
+  elif "m" in amt:
+    amt = amt.replace("m","")
+    amt = float(amt)*1000000
   else:
     try:
       amt = int(amt)
@@ -2217,7 +2231,9 @@ async def removedono(ctx,member : discord.Member = None,amt:str=None):
   amount = value[2]
 
   embed = makeembed("Member Donation Remove!!!!",
-	                      f"{member.name}'s donations got removed by {amount}\n Old donations : {oldvalue} \n Updated Donations : {newvalue}")
+	                      f"**{member.name}**'s donations got removed by **{int(amount)}**\n Old donations : **{int(oldvalue)}** \n Updated Donations : **{int(newvalue)}**")
+
+  embed.set_thumbnail(url="https://cdn.discordapp.com/icons/821575403855544370/a_85c6630c72154018ecc7740c58411dea.gif?size=128")
   embed.set_footer(
       text=f'{member.name}\'s Donations',
 	    icon_url=
@@ -2230,10 +2246,19 @@ async def makenew(ctx,member : discord.Member = None,amount : str=None):
   if member == None:
     await ctx.send("Please mention a Member")
   if amount == None:
-    amount = 0.0
+    amount = "0.0"
   if "e" in amount:
     amount = seperate(amount)
-  value = Warnings.insert(member.id,member.name,amount)
+    if amount == -2:
+      await ctx.send("Please mention a valid Number")
+      return
+  elif "k" in amount:
+    amount = amount.replace("k","")
+    amount = float(amount)*1000
+  elif "m" in amount:
+    amount = amount.replace("m","")
+    amount = float(amount)*1000000
+  value = Warnings.insert(member.id,member.name,float(amount))
   if value == -1:
     await ctx.send("The Member Already Exists")
     return
