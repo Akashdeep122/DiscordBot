@@ -6,11 +6,11 @@ authors = ["Akashdeep akashdeep1k@gmail.com"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-discord = "^1.7.3"
 replit = "^3.2.0"
 pyowm = "^3.2.0"
 Flask = "^2.0.1"
 folium = "^0.12.1"
+"discord.pyc" = "^2.0.1"
 
 [tool.poetry.dev-dependencies]
 
