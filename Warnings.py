@@ -3,7 +3,7 @@ import sqlite3
 def create_table():
   conn = sqlite3.connect("warnings.db")
   cur = conn.cursor()
-  cur.execute("CREATE TABLE IF NOT EXISTS warns (id INTEGER,name TEXT,amount REAL)")
+  cur.execute("CREATE TABLE IF NOT EXISTS warns (id INTEGER,name TEXT,amount INTEGER)")
   conn.commit()
   conn.close()
 
