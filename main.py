@@ -544,7 +544,7 @@ async def help(ctx):
 		    f"Use {prefixes[str(ctx.guild.id)]}help <command> for more information on the command.",
 		    color=ctx.author.color)
 		em.add_field(
-		    name="🪙 Currency",
+		    name="<a:DIcoin:922797912977719368> Currency",
 		    value=
 		    "```bal,daily,work,give,gamble```",
 		    inline=False)
@@ -2449,7 +2449,6 @@ async def adddono(ctx,member : discord.Member = None,amt:str=None):
 	    )
   embed.set_thumbnail(url="https://cdn.discordapp.com/icons/821575403855544370/a_85c6630c72154018ecc7740c58411dea.gif?size=128")
   await ctx.send(embed=embed)
-  update(member.id,member.name,round(int(amount)/200))
 
 @client.command(aliases=['rmdono','rdono','rm','rd'])
 @commands.has_permissions(manage_messages=True)
@@ -2499,7 +2498,7 @@ async def removedono(ctx,member : discord.Member = None,amt:str=None):
 	    f'{member.avatar.url}'
 	    )
   await ctx.send(embed=embed)
-  update(member.id,member.name,round(int(amount)/200),boolean=False)
+
 
 @client.command()
 @commands.has_permissions(manage_messages=True)
@@ -2523,7 +2522,6 @@ async def makenew(ctx,member : discord.Member = None,amount : str=None):
     amount = int(amount)
     amount1 = amount/200
   value = Warnings.insert(member.id,member.name,float(amount))
-  update(member.id,member.name,round(int(amount)/200))
   if value == -1:
     await ctx.send("The Member Already Exists")
     return
@@ -2805,9 +2803,12 @@ async def gamble(ctx,amt:str=None):
   if val[0][2] < amt:
     await ctx.send("You dont have that much money")
     return
+  if 10000 < amt:
+    await ctx.send("Max limit is 10k")
+    return
   a = random.randint(1,100)
-  if a > 52:
-    val = random.randint(round(amt/3),round(amt*1.75))
+  if a > 52 or a==52:
+    val = random.randint(round(amt/2),round(amt*1.75))
     newamt = val+amt
     update(ctx.author.id,ctx.author.name,val)
     val2 = viewnum(ctx.author.id)
@@ -2824,7 +2825,7 @@ async def gamble(ctx,amt:str=None):
     embed.timestamp = datetime.datetime.utcnow()
     await ctx.send(embed=embed)
 
-  elif a>50 and a<52 or a==52:
+  elif a>50 and a<52 or a==50:
     val2 = viewnum(ctx.author.id)
     embed=discord.Embed(title=f"{ctx.author.name}'s gambling game",description=f"YOU JUST TIED WITH ME \n You now have {val2[0][2]}",colour=0xf0e51f)
     embed.set_author(name= f"{ctx.author.name}#{ctx.author.discriminator}",icon_url=ctx.author.avatar.url)
@@ -2851,16 +2852,59 @@ async def gamble(ctx,amt:str=None):
     embed.timestamp = datetime.datetime.utcnow()
     await ctx.send(embed=embed)
 
+  
+
+
+
+@client.command()
+async def shopping(ctx):
+  await ctx.send("SHOP")
+
+
+
+  
+
+
+@client.command()
+@commands.cooldown(1, 60, commands.BucketType.user)
+async def beg(ctx):
+  val = random.randint(1,11)
+  if val >5 or val == 5:
+    val2 = random.randint(1,200)
+    update(ctx.author.id,ctx.author.name,val2)
+    val3 = viewnum(ctx.author.id)
+    embed=discord.Embed(title=f"{ctx.author.name} begged for money",description=f"You seem a truthful guy You get **{val2}** from {random.choice(["raine","Akashdeep","Gamerking","Bottomtoes","Maika","ONLY FOR YOU(Makenzee)","Sin"])} \n now you have {val3[0][2]} ",colour=0x13e82b)
+    embed.set_author(name= f"{ctx.author.name}#{ctx.author.discriminator}",icon_url=ctx.author.avatar.url)
 
     
+    embed.set_footer(
+	    text='Dank Island ',
+	    icon_url=
+	    'https://cdn.discordapp.com/icons/821575403855544370/a_85c6630c72154018ecc7740c58411dea.gif?size=128')
+    embed.timestamp = datetime.datetime.utcnow()
+    await ctx.send(embed=embed)
+  else:
+    mlist = ["SHUT UP I WONT GIVE YOU ANY","I DONT GIVE MONEY TO BEGGARS","JUST GET OUT OF HERE","uhm i better go from here","go work instead NOOB"]
+    embed=discord.Embed(title=f"{ctx.author.name} begged for money",description=f"{random.choice(mlist)}",colour=0xf01f1f)
+    embed.set_author(name= f"{ctx.author.name}#{ctx.author.discriminator}",icon_url=ctx.author.avatar.url)
+
+    
+    embed.set_footer(
+	    text='Dank Island ',
+	    icon_url=
+	    'https://cdn.discordapp.com/icons/821575403855544370/a_85c6630c72154018ecc7740c58411dea.gif?size=128')
+    embed.timestamp = datetime.datetime.utcnow()
+    await ctx.send(embed=embed)
+
+@beg.error
+async def beg_error(ctx,error):
+  await ctx.send("Stop begging so much")
+
+
+
+
    
   
-  
-
-
-
-  
-
 
 
 keep_alive()
