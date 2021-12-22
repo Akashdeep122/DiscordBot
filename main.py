@@ -546,7 +546,7 @@ async def help(ctx):
 		em.add_field(
 		    name="<a:DIcoin:922797912977719368> Currency",
 		    value=
-		    "```bal,daily,work,give,gamble```",
+		    "```bal,daily,work,give,gamble,beg```",
 		    inline=False)
 		em.add_field(
 		    name="<:ban_hammer:869070330222743592> Utility",
@@ -2674,7 +2674,7 @@ async def bal(ctx,member: discord.Member = None):
     insert(member.id,member.name,money)
     money = viewnum(member.id)
   for x in money:
-    value = makeembed(f"Money owned by **{member.name}** ",f"Coins owned : **{x[2]}**")
+    value = makeembed(f"Money owned by **{member.name}** ",f"Coins owned : **{x[2]}**<a:DIcoin:922797912977719368>")
 
     
   await ctx.send(embed=value)
@@ -2703,7 +2703,7 @@ async def daily(ctx):
     money = viewnum(member.id)
   update(member.id,member.name,500)
   for x in money:
-    value = makeembed(f"Daily Earned by **{member.name}** ","You earned 500 today")
+    value = makeembed(f"Daily Earned by **{member.name}** ","You earned 500 <a:DIcoin:922797912977719368> today")
   await ctx.send(embed=value)
 
 
@@ -2720,7 +2720,7 @@ async def work(ctx):
     money = viewnum(member.id)
   update(member.id,member.name,somemoni)
   for x in money:
-    value = makeembed(f" **{member.name}** Tried to work ",f"You earned {somemoni} today")
+    value = makeembed(f" **{member.name}** Tried to work ",f"You earned {somemoni}<a:DIcoin:922797912977719368> today")
   await ctx.send(embed=value)
   
 @client.command()
@@ -2806,14 +2806,17 @@ async def gamble(ctx,amt:str=None):
   if 10000 < amt:
     await ctx.send("Max limit is 10k")
     return
+  if amt < 50:
+    await ctx.send("Min limit is 50")
+    return
   a = random.randint(1,100)
-  if a > 52 or a==52:
+  if a > 53 or a==53:
     val = random.randint(round(amt/2),round(amt*1.75))
     newamt = val+amt
     update(ctx.author.id,ctx.author.name,val)
     val2 = viewnum(ctx.author.id)
 
-    embed=discord.Embed(title=f"{ctx.author.name}'s gambling game",description=f"WOOHOO!! You Won **{val}** \n  now you have {val2[0][2]}",colour=0x13e82b)
+    embed=discord.Embed(title=f"{ctx.author.name}'s gambling game",description=f"WOOHOO!! You Won **{val}**<a:DIcoin:922797912977719368> \n  now you have {val2[0][2]}<a:DIcoin:922797912977719368>",colour=0x13e82b)
     embed.set_author(name= f"{ctx.author.name}#{ctx.author.discriminator}",icon_url=ctx.author.avatar.url)
 
 
@@ -2825,9 +2828,9 @@ async def gamble(ctx,amt:str=None):
     embed.timestamp = datetime.datetime.utcnow()
     await ctx.send(embed=embed)
 
-  elif a>50 and a<52 or a==50:
+  elif a>50 and a<53:
     val2 = viewnum(ctx.author.id)
-    embed=discord.Embed(title=f"{ctx.author.name}'s gambling game",description=f"YOU JUST TIED WITH ME \n You now have {val2[0][2]}",colour=0xf0e51f)
+    embed=discord.Embed(title=f"{ctx.author.name}'s gambling game",description=f"YOU JUST TIED WITH ME \n You now have {val2[0][2]}<a:DIcoin:922797912977719368>",colour=0xf0e51f)
     embed.set_author(name= f"{ctx.author.name}#{ctx.author.discriminator}",icon_url=ctx.author.avatar.url)
 
     
@@ -2841,7 +2844,7 @@ async def gamble(ctx,amt:str=None):
     update(ctx.author.id,ctx.author.name,amt,boolean=False)
     val2 = viewnum(ctx.author.id)
 
-    embed=discord.Embed(title=f"{ctx.author.name}'s gambling game",description=f"Oof Sad! You Lost **{amt}** \n  now you have {val2[0][2]}",colour=0xf01f1f)
+    embed=discord.Embed(title=f"{ctx.author.name}'s gambling game",description=f"Oof Sad! You Lost **{amt}**<a:DIcoin:922797912977719368> \n  now you have {val2[0][2]}<a:DIcoin:922797912977719368>",colour=0xf01f1f)
     embed.set_author(name= f"{ctx.author.name}#{ctx.author.discriminator}",icon_url=ctx.author.avatar.url)
 
     
@@ -2855,10 +2858,30 @@ async def gamble(ctx,amt:str=None):
   
 
 
+mainshop = [{"name":"smallexp","price":5000,"description":"increases 1x multiplier , good for grinding amari exp"},
+            {"name":"rainbow","price":10000,"description":"Changes colours every 10minutes , you can change it again if you want"}]
+@client.command(aliases=["market","shopping"])
+async def shop(ctx,item:str=None):
+  if item == None:
 
-@client.command()
-async def shopping(ctx):
-  await ctx.send("SHOP")
+    somestr = ""
+    for item in mainshop:
+        name = item["name"]
+        price = item["price"]
+        somestr += f"{name} : {price} <a:DIcoin:922797912977719368> \n"
+    em = makeembed("Dank island Shop",f"{somestr}")
+
+    await ctx.send(embed = em)
+  else:
+    for someth in mainshop:
+      if item == someth["name"]:
+        break
+    else:
+      ctx.send("Item not Found")
+    await ctx.send(embed=makeembed("Dank Island Shop",f"**{someth['name']}** \n```Price: {someth['price']}``` \n               {someth['description']}"))
+
+
+
 
 
 
@@ -2866,14 +2889,15 @@ async def shopping(ctx):
 
 
 @client.command()
-@commands.cooldown(1, 60, commands.BucketType.user)
+@commands.cooldown(1, 30, commands.BucketType.user)
 async def beg(ctx):
   val = random.randint(1,11)
   if val >5 or val == 5:
     val2 = random.randint(1,200)
     update(ctx.author.id,ctx.author.name,val2)
     val3 = viewnum(ctx.author.id)
-    embed=discord.Embed(title=f"{ctx.author.name} begged for money",description=f"You seem a truthful guy You get **{val2}** from {random.choice(["raine","Akashdeep","Gamerking","Bottomtoes","Maika","ONLY FOR YOU(Makenzee)","Sin"])} \n now you have {val3[0][2]} ",colour=0x13e82b)
+    l = ["raine","Akashdeep","Gamerking","Bottomtoes","Maika","ONLY FOR YOU(Makenzee)","Sin"]
+    embed=discord.Embed(title=f"{ctx.author.name} begged for money",description=f"You seem a truthful guy You get **{val2}** from {random.choice(l)} \n now you have {val3[0][2]} ",colour=0x13e82b)
     embed.set_author(name= f"{ctx.author.name}#{ctx.author.discriminator}",icon_url=ctx.author.avatar.url)
 
     
@@ -2901,6 +2925,149 @@ async def beg_error(ctx,error):
   await ctx.send("Stop begging so much")
 
 
+    
+
+
+class Buttons(View):
+  def __init__(self,ctx,client,amt):
+    super().__init__()
+    self.ctx = ctx
+    self.client =client
+    self.amt = amt
+    
+  
+  @discord.ui.button(label="Guess Color (1.75x Prize)",style=discord.ButtonStyle.green)
+  async def button_callback0(self,button,interaction):
+    if interaction.user != self.ctx.author:
+      await interaction.response.send_message("Its not your game",ephermal=True)
+      return
+    await interaction.response.edit_message(view=None)
+    value = await self.ctx.send("Answer the Colour Then")
+
+    while True:
+      msg = await self.client.wait_for('message')
+      if msg.author == self.ctx.author and msg.channel == self.ctx.channel:
+        a1 = msg.content.lower()
+        break
+    if a1 not in ["black","red"]:
+      await self.ctx.send("Give me a valid Colour")
+      return
+    embed=makeembed(f"{self.ctx.author.name}'s Roulette","Let me scroll the roulette wheel")
+    embed.set_image(url="https://thumbs.gfycat.com/LivelyObviousAnhinga-size_restricted.gif")
+    val = await self.ctx.send(embed=embed)
+    a = random.randint(1,36)
+    b = random.choice(["black","red"])
+    await asyncio.sleep(7)
+    if a1 == b:
+      embed=discord.Embed(title = f"{self.ctx.author.name}'s Roulette ",description=f"Congo you won , The number was {a} and Colour was {b}",colour=0x13e82b)
+      embed.set_author(name= f"{self.ctx.author.name}#{self.ctx.author.discriminator}",icon_url=self.ctx.author.avatar.url)
+
+    
+      embed.set_footer(
+	    text='Dank Island ',
+	    icon_url=
+	    'https://cdn.discordapp.com/icons/821575403855544370/a_85c6630c72154018ecc7740c58411dea.gif?size=128')
+      embed.timestamp = datetime.datetime.utcnow()
+      await val.edit(embed=embed)
+      update(self.ctx.author.id,self.ctx.author.name,round(self.amt))
+      return
+    else:
+      embed=discord.Embed(title = f"{self.ctx.author.name}'s Roulette ",description=f"Sadly You Lost , The number was {a} and Colour was {b}",colour=0xf01f1f)
+      embed.set_author(name= f"{self.ctx.author.name}#{self.ctx.author.discriminator}",icon_url=self.ctx.author.avatar.url)
+
+    
+      embed.set_footer(
+	    text='Dank Island ',
+	    icon_url=
+	    'https://cdn.discordapp.com/icons/821575403855544370/a_85c6630c72154018ecc7740c58411dea.gif?size=128')
+      embed.timestamp = datetime.datetime.utcnow()
+      await val.edit(embed=embed)
+      update(self.ctx.author.id,self.ctx.author.name,self.amt,boolean=False)
+      return
+    
+  @discord.ui.button(label="Guess Number (10x Prize)",style=discord.ButtonStyle.green)
+  async def button_callback(self,button,interaction):
+    if interaction.user != self.ctx.author:
+      await interaction.response.send_message("Its not your game",ephermal=True)
+      return
+    await interaction.response.edit_message(view=None)  
+    value = await self.ctx.send("Answer the Number Then")
+    
+    while True:
+      msg = await self.client.wait_for('message')
+      if msg.author == self.ctx.author and msg.channel == self.ctx.channel:
+        a1 = int(msg.content)
+        break
+    if a1 not in range(1,37):
+      await self.ctx.send("Give me a valid Number")
+      return
+    embed=makeembed(f"{self.ctx.author.name}'s Roulette","Let me scroll the roulette wheel")
+    embed.set_image(url="https://thumbs.gfycat.com/LivelyObviousAnhinga-size_restricted.gif")
+    val = await self.ctx.send(embed=embed)
+    a = random.randint(1,36)
+    b = random.choice(["Black","Red"])
+    await asyncio.sleep(7)
+    if a1 == a:
+      embed=discord.Embed(title = f"{self.ctx.author.name}'s Roulette ",description=f"Congo you won , The number was {a} and Colour was {b}",colour=0x13e82b)
+      embed.set_author(name= f"{self.ctx.author.name}#{self.ctx.author.discriminator}",icon_url=self.ctx.author.avatar.url)
+
+    
+      embed.set_footer(
+	    text='Dank Island ',
+	    icon_url=
+	    'https://cdn.discordapp.com/icons/821575403855544370/a_85c6630c72154018ecc7740c58411dea.gif?size=128')
+      embed.timestamp = datetime.datetime.utcnow()
+      await val.edit(embed=embed)
+      update(self.ctx.author.id,self.ctx.author.name,self.amt*10)
+      return
+    else:
+      embed=discord.Embed(title = f"{self.ctx.author.name}'s Roulette ",description=f"Sadly You Lost {self.amt} , The number was {a} and Colour was {b}",colour=0xf01f1f)
+      embed.set_author(name= f"{self.ctx.author.name}#{self.ctx.author.discriminator}",icon_url=self.ctx.author.avatar.url)
+
+    
+      embed.set_footer(
+	    text='Dank Island ',
+	    icon_url=
+	    'https://cdn.discordapp.com/icons/821575403855544370/a_85c6630c72154018ecc7740c58411dea.gif?size=128')
+      embed.timestamp = datetime.datetime.utcnow()
+      await val.edit(embed=embed)
+      update(self.ctx.author.id,self.ctx.author.name,self.amt,boolean=False)
+      return
+@client.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def roulette(ctx,amt:str=None):
+  val = viewnum(ctx.author.id)
+  if val == []:
+    await ctx.send("You dont have any money kiddo")
+  if amt == None:
+    await ctx.send("Mention Amount as well")
+  if "e" in amt:
+    amt = seperate(amt)
+    if amt == -2:
+      await ctx.send("Please mention a valid Number")
+      return
+  elif "k" in amt:
+    amt = amt.replace("k","")
+    amt = float(amt)*1000
+  else:
+    try:
+      amt = int(amt)
+    except:
+      await ctx.send("Send a Number Please")
+      return
+  if amt<0:
+    await ctx.send("Please give me a valid amount")
+    return
+  if val[0][2] < amt:
+    await ctx.send("You dont have that much money")
+    return
+  if 10000 < amt:
+    await ctx.send("Max limit is 10k")
+    return
+  if amt == None:
+    await ctx.send("give me a valid bet")
+  view = Buttons(ctx,client,amt)
+  await ctx.send(embed=makeembed(f"{ctx.author.name}'s roulette","Guess the right Number/colour/odd-even/Highlow"),view=view)
 
 
    
