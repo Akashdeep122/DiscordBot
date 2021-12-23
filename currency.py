@@ -3,15 +3,15 @@ import sqlite3
 def create_table():
   conn = sqlite3.connect("currency.db")
   cur = conn.cursor()
-  cur.execute("CREATE TABLE IF NOT EXISTS warns (id INTEGER,name TEXT,money INTEGER)")
+  cur.execute(f"CREATE TABLE IF NOT EXISTS warns (id INTEGER,name TEXT,money INTEGER)")
   conn.commit()
   conn.close()
 
-def delete(id):
+def delete(id,database="warns"):
     conn = sqlite3.connect("currency.db")
     cur = conn.cursor()
     try:
-      cur.execute(f"DELETE FROM warns WHERE id=?",(id,))
+      cur.execute(f"DELETE FROM {database} WHERE id=?",(id,))
     except:
       return -1
     
@@ -19,17 +19,17 @@ def delete(id):
     conn.close()
 
 
-def insert(id,name,money):
+def insert(id,name,money,database="warns"):
     conn = sqlite3.connect("currency.db")
     cur = conn.cursor()
-    cur.execute("SELECT * FROM warns")
+    cur.execute(f"SELECT * FROM {database}")
     rows = cur.fetchall()
     
-    cur.execute(f"INSERT INTO warns VALUES(?,?,?)",(id,name,money))
+    cur.execute(f"INSERT INTO {database} VALUES(?,?,?)",(id,name,money))
     conn.commit()
     conn.close()
 
-def update(id,name,money,boolean = True):
+def update(id,name,money,boolean = True,database="warns"):
     conn = sqlite3.connect("currency.db")
     cur = conn.cursor()
     val = viewnum(id)
@@ -48,7 +48,7 @@ def update(id,name,money,boolean = True):
       else:
         money = myval-money
     
-    cur.execute(f"UPDATE warns SET money=? WHERE id=?",(money,id))
+    cur.execute(f"UPDATE {database} SET money=? WHERE id=?",(money,id))
     conn.commit()
     conn.close()
 
@@ -93,25 +93,25 @@ def remove(id,name,amount):
   return mylist
 
 """
-def viewnum(id):
+def viewnum(id,database="warns"):
     conn = sqlite3.connect("currency.db")
     cur = conn.cursor()
-    cur.execute("SELECT * FROM warns WHERE id=?",(id,))
+    cur.execute(f"SELECT * FROM {database} WHERE id=?",(id,))
     rows = cur.fetchall()
     conn.close()
     return rows
 
-def viewname(name):
+def viewname(name,database="warns"):
     conn = sqlite3.connect("currency.db")
     cur = conn.cursor()
-    cur.execute("SELECT * FROM warns WHERE name=?",(name,))
+    cur.execute(f"SELECT * FROM {database} WHERE name=?",(name,))
     rows = cur.fetchall()
     conn.close()
     return rows
-def view():
+def view(database="warns"):
     conn = sqlite3.connect("currency.db")
     cur = conn.cursor()
-    cur.execute("SELECT * FROM warns")
+    cur.execute(f"SELECT * FROM {database}")
     rows = cur.fetchall()
     conn.close()
     return rows

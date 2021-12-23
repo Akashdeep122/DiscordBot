@@ -546,7 +546,7 @@ async def help(ctx):
 		em.add_field(
 		    name="<a:DIcoin:922797912977719368> Currency",
 		    value=
-		    "```bal,daily,work,give,gamble,beg```",
+		    "```bal,daily,work,give,gamble,beg,coinflip```",
 		    inline=False)
 		em.add_field(
 		    name="<:ban_hammer:869070330222743592> Utility",
@@ -1177,6 +1177,9 @@ async def ping(ctx, message: str = "Just Trying to be quiet"):
 
 @client.command()
 async def vote(ctx):
+	button = Button(label="Go to Vote",style=discord.ButtonStyle.green,url='https://top.gg/servers/821575403855544370/vote')
+	view = View()
+	view.add_item(button)
 	giveaway = makeembed(
 	    title='**❤️Support us by voting**',
 	    description=
@@ -1191,7 +1194,7 @@ async def vote(ctx):
 	    value=
 	    "➡️ Top Voter in <#856056648723857439> will get amazing prizes \n ➡️ Noumnenon Giveaway Bypass for a week \n ➡️ Top Voter Role",
 	    inline=False)
-	await ctx.send(embed=giveaway)
+	await ctx.send(embed=giveaway,view=view)
 	pass
 
 
@@ -1244,14 +1247,7 @@ async def weather(ctx, value: str = "C", *, place: str = None):
 	pass
 
 
-@client.command(aliases=['coinflip'])
-async def flip(ctx):
-	flip = ["Heads", "Tails"]
-	value = random.choice(flip)
-	howgaystart = makeembed(title=f"**{ctx.author.name}'s coin Flipped to :**",
-	                        description=f'{value}')
-	await ctx.send(embed=howgaystart)
-	pass
+
 
 
 @client.command(aliases=['makemap'])
@@ -1338,7 +1334,7 @@ async def invert(ctx, Member: discord.Member = None):
 	if Member == None:
 		Member = ctx.author
 
-	asset = Member.avatar_url_as(size=1024)
+	asset = Member.avatar_with_size(1024)
 	data = BytesIO(await asset.read())
 	pfp = Image.open(data)
 	pfp = ImageOps.invert(pfp)
@@ -1710,24 +1706,9 @@ async def on_message(message):
       await message.channel.send("Breh what are you ebven imagining")
   if message.content.startswith("no u"):
     await message.channel.send("no you")
-  if "vote" in message.content:
-    	button = Button(label="Go to Vote",style=discord.ButtonStyle.green,url='https://top.gg/servers/821575403855544370/vote')
-    	view = View()
-    	view.add_item(button)
-    	giveaway = makeembed(
-	    title='**❤️Support us by voting**',
-	    description="Vote in the button down below now")
-    	giveaway.add_field(
-	    name='❤️__voter Perks__',
-	    value=
-	    "➡️Role, the Island Voters \n ➡️ Access to <#839848405677244416> \n ➡️ You help us grow, which allows us to hold larger heists, giveaways, and other events.",
-	    inline=False)
-    	giveaway.add_field(
-	    name="❤️ Other Benefits:",
-	    value=
-	    "➡️ Top Voter in <#856056648723857439> will get amazing prizes \n ➡️ Noumnenon Giveaway Bypass for a week \n ➡️ Top Voter Role",
-	    inline=False)
-    	await message.channel.send(embed=giveaway,view=view)
+  if message.content.startswith(".donate"):
+    await message.channel.send("**Item donations** must be sent to <@!796257057723777045> and **cash donations** must be sent to <@!843803189346435072>")
+
   
   else:
     await client.process_commands(message)
@@ -2732,26 +2713,10 @@ async def give(ctx,member : discord.Member = None , amt : str = None):
   if amt == None:
     await ctx.send("WHAT DO YOU EVEN WANT TO GIVE")
     return
-  if "e" in amt:
-    amt = seperate(amt)
-    if amt == -2:
-      await ctx.send("Please mention a valid Number")
-      return
-  elif "k" in amt:
-    amt = amt.replace("k","")
-    amt = float(amt)*1000
-  elif "m" in amt:
-    amt = amt.replace("m","")
-    amt = float(amt)*1000000
-  else:
-    try:
-      amt = int(amt)
-    except:
-      await ctx.send("Send a Number Please")
-      return
-  if amt<0:
-    await ctx.send("Please give me a valid amount")
-    return 
+  val = await get_error(ctx,amt)
+  amt = val
+  if val == -1:
+    return
   
   val = viewnum(ctx.author.id)
   if val == []:
@@ -2780,34 +2745,15 @@ async def gamble(ctx,amt:str=None):
     await ctx.send("You dont have any money kiddo")
   if amt == None:
     await ctx.send("Mention Amount as well")
-  if "e" in amt:
-    amt = seperate(amt)
-    if amt == -2:
-      await ctx.send("Please mention a valid Number")
-      return
-  elif "k" in amt:
-    amt = amt.replace("k","")
-    amt = float(amt)*1000
-  elif "m" in amt:
-    amt = amt.replace("m","")
-    amt = float(amt)*1000000
-  else:
-    try:
-      amt = int(amt)
-    except:
-      await ctx.send("Send a Number Please")
-      return
-  if amt<0:
-    await ctx.send("Please give me a valid amount")
+  val = await get_error(ctx,amt)
+  amt = val
+  if val == -1:
     return
-  if val[0][2] < amt:
-    await ctx.send("You dont have that much money")
-    return
-  if 10000 < amt:
-    await ctx.send("Max limit is 10k")
-    return
-  if amt < 50:
+  if int(amt) < 50:
     await ctx.send("Min limit is 50")
+    return
+  if 10000 < int(amt):
+    await ctx.send("Max limit is 10000")
     return
   a = random.randint(1,100)
   if a > 53 or a==53:
@@ -2855,11 +2801,10 @@ async def gamble(ctx,amt:str=None):
     embed.timestamp = datetime.datetime.utcnow()
     await ctx.send(embed=embed)
 
+
   
+mainshop = [{"name":"smallexp","price":5000,"description":"increases 1x multiplier , good for grinding amari exp","code":""},{"name":"rainbow","price":10000,"description":"Changes colours every 10 minutes , you can change it again if you want","code":"Rainbow"}]
 
-
-mainshop = [{"name":"smallexp","price":5000,"description":"increases 1x multiplier , good for grinding amari exp"},
-            {"name":"rainbow","price":10000,"description":"Changes colours every 10minutes , you can change it again if you want"}]
 @client.command(aliases=["market","shopping"])
 async def shop(ctx,item:str=None):
   if item == None:
@@ -2877,12 +2822,40 @@ async def shop(ctx,item:str=None):
       if item == someth["name"]:
         break
     else:
-      ctx.send("Item not Found")
+      await ctx.send("Item not Found")
     await ctx.send(embed=makeembed("Dank Island Shop",f"**{someth['name']}** \n```Price: {someth['price']}``` \n               {someth['description']}"))
 
+@client.command(aliases=["purchase"])
+async def buy(ctx,item:str=None):
+  if item == None:
+    await ctx.send('what do you even want to buy huh?')
+    return
+  for someth in mainshop:
+      if item == someth["name"]:
+        break
+  else:
+    await ctx.send("Item not Found")
+  val = viewnum(ctx.author.id)
+  if val == []:
+    await ctx.send("You dont have the money to do that")
+    return
+  if val[0][2] < someth["price"]:
+    await ctx.send("You dont have the money to buy that")
+    return
+  loop = asyncio.get_running_loop()
+  await rainbowgib(ctx.author,someth["code"])
 
-
-
+  a = someth["name"]
+  b = someth["price"]
+  update(ctx.author.id,ctx.author.name,someth["price"],boolean=False)
+  await ctx.send(f"Successfully brought {a} for {b}")
+  
+async def rainbowgib(user,rolename):
+  await client.wait_until_ready()
+  guild = client.get_guild(821575403855544370)
+  print("ok")
+  role = discord.utils.get(guild.roles, name=(rolename))
+  await user.add_roles(role)
 
 
   
@@ -2939,7 +2912,7 @@ class Buttons(View):
   @discord.ui.button(label="Guess Color (1.75x Prize)",style=discord.ButtonStyle.green)
   async def button_callback0(self,button,interaction):
     if interaction.user != self.ctx.author:
-      await interaction.response.send_message("Its not your game",ephermal=True)
+      await interaction.response.send_message("Its not your game",ephemeral=True)
       return
     await interaction.response.edit_message(view=None)
     value = await self.ctx.send("Answer the Colour Then")
@@ -2988,7 +2961,7 @@ class Buttons(View):
   @discord.ui.button(label="Guess Number (10x Prize)",style=discord.ButtonStyle.green)
   async def button_callback(self,button,interaction):
     if interaction.user != self.ctx.author:
-      await interaction.response.send_message("Its not your game",ephermal=True)
+      await interaction.response.send_message("Its not your game",ephemeral=True)
       return
     await interaction.response.edit_message(view=None)  
     value = await self.ctx.send("Answer the Number Then")
@@ -3036,41 +3009,149 @@ class Buttons(View):
 @client.command()
 @commands.cooldown(1, 10, commands.BucketType.user)
 async def roulette(ctx,amt:str=None):
+  if amt == None:
+    await ctx.send("give me a valid bet")
+    return
+  val = await get_error(ctx,amt)
+  if val == -1:
+    return
+  amt = val
+  if amt < 50:
+    await ctx.send("Min limit is 50")
+    return
+  if 10000 < amt:
+    await ctx.send("Max limit is 10000")
+    return
+  view = Buttons(ctx,client,amt)
+  await ctx.send(embed=makeembed(f"{ctx.author.name}'s roulette","Guess the right Number/colour/odd-even/Highlow"),view=view)
+
+@client.command(aliases=['coinflip'])
+@commands.cooldown(1, 4, commands.BucketType.user)
+async def flip(ctx,answer:str=None,amount:str=None):
+  if answer == None:
+    flip = ["Heads", "Tails"]
+    value = random.choice(flip)
+    howgaystart = makeembed(title=f"**{ctx.author.name}'s coin Flipped to :**",
+	                        description=f'{value}')
+    howgaystart.set_author(name= f"{ctx.author.name}#{ctx.author.discriminator}",icon_url=ctx.author.avatar.url)
+    await ctx.send(embed=howgaystart)
+  else:
+    answer = answer.lower()
+    if answer not in ["heads","tails"]:
+      await ctx.send("Give me a guess dude")
+    amount = await get_error(ctx,amount)
+    if amount == -1:
+      return
+    if amount < 50:
+      await ctx.send("Min limit is 50")
+      return
+    if 10000 < amount:
+      await ctx.send("Max limit is 10000")
+      return
+    flip = ["Heads", "Tails"]
+    value = random.choice(flip)
+    if value.lower() != answer:
+      update(ctx.author.id,ctx.author.name,amount,boolean=False)
+      val2 = viewnum(ctx.author.id)
+
+      embed=discord.Embed(title=f"{ctx.author.name}'s coinflip game",description=f"Oof Sad! It was **{value}** You Lost **{amount}**<a:DIcoin:922797912977719368> \n  now you have {val2[0][2]}<a:DIcoin:922797912977719368>",colour=0xf01f1f)
+      embed.set_author(name= f"{ctx.author.name}#{ctx.author.discriminator}",icon_url=ctx.author.avatar.url)
+
+    
+      embed.set_footer(
+	    text='Dank Island ',
+	    icon_url=
+	    'https://cdn.discordapp.com/icons/821575403855544370/a_85c6630c72154018ecc7740c58411dea.gif?size=128')
+      embed.timestamp = datetime.datetime.utcnow()
+      await ctx.send(embed=embed)
+    else:
+      update(ctx.author.id,ctx.author.name,amount)
+      val2 = viewnum(ctx.author.id)
+
+      embed=discord.Embed(title=f"{ctx.author.name}'s coinflip",description=f"WOOHOO!! You Won **{amount}**<a:DIcoin:922797912977719368> \n  now you have {val2[0][2]}<a:DIcoin:922797912977719368>",colour=0x13e82b)
+      embed.set_author(name= f"{ctx.author.name}#{ctx.author.discriminator}",icon_url=ctx.author.avatar.url)
+
+
+    
+      embed.set_footer(
+	    text='Dank Island ',
+	    icon_url=
+	    'https://cdn.discordapp.com/icons/821575403855544370/a_85c6630c72154018ecc7740c58411dea.gif?size=128')
+      embed.timestamp = datetime.datetime.utcnow()
+      await ctx.send(embed=embed)
+
+@client.command()
+async def adddev(ctx,amount:str=None,member:discord.Member=None):
+  if member == None:
+    member = ctx.author
+  if ctx.author.id != 648363962416627712:
+    return
+
+  if amount == None:
+    await ctx.send("Give me a amount creator")
+    return
+  val = await get_error(ctx,amount)
+  if val == -1:
+    return
+  update(member.id,member.name,val)
+
+@client.command()
+async def remdev(ctx,amount:str=None,member:discord.Member=None):
+  if member == None:
+    member = ctx.author
+  if ctx.author.id != 648363962416627712:
+    return
+
+  if amount == None:
+    await ctx.send("Give me a amount creator")
+    return
+  val = await get_error(ctx,amount)
+  if val == -1:
+    return
+  update(member.id,member.name,val,boolean=False)
+
+
+
+async def get_error(ctx,amt):
   val = viewnum(ctx.author.id)
   if val == []:
     await ctx.send("You dont have any money kiddo")
+    return -1
   if amt == None:
     await ctx.send("Mention Amount as well")
+    return -1
   if "e" in amt:
     amt = seperate(amt)
     if amt == -2:
       await ctx.send("Please mention a valid Number")
-      return
+      return -1
+    return amt
   elif "k" in amt:
     amt = amt.replace("k","")
-    amt = float(amt)*1000
+    amt = int(amt)*1000
+    print(amt)
+    return amt
   else:
     try:
       amt = int(amt)
+      return amt
     except:
       await ctx.send("Send a Number Please")
-      return
+      return -1
   if amt<0:
     await ctx.send("Please give me a valid amount")
-    return
+    return -1
   if val[0][2] < amt:
     await ctx.send("You dont have that much money")
-    return
-  if 10000 < amt:
-    await ctx.send("Max limit is 10k")
-    return
-  if amt == None:
-    await ctx.send("give me a valid bet")
-  view = Buttons(ctx,client,amt)
-  await ctx.send(embed=makeembed(f"{ctx.author.name}'s roulette","Guess the right Number/colour/odd-even/Highlow"),view=view)
+    return -1
 
 
-   
+    
+
+  
+  
+
+     
   
 
 

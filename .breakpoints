@@ -1,29 +1,43 @@
 {
   "files": {
+    "currency.py": [
+      {
+        "id": "0cf85beb-82f1-475c-9bc2-4b87a76be199",
+        "line": 7,
+        "version": 429,
+        "index": 187
+      }
+    ],
     "main.py": [
       {
         "id": "01256686-aad5-4720-91bd-5ecb616a9adb",
         "line": 1,
-        "version": 57415,
+        "version": 59651,
         "index": 0
       },
       {
         "id": "ba6a73a5-3a8d-4d2a-8c03-2d4d4b616b4c",
         "line": 1,
-        "version": 57415,
+        "version": 59651,
         "index": 0
       },
       {
         "id": "f257165b-6865-4ae3-b6d1-d2772d492937",
-        "line": 2540,
-        "version": 57415,
-        "index": 84497
+        "line": 2543,
+        "version": 59651,
+        "index": 84703
+      },
+      {
+        "id": "b97dbc1b-fdee-4645-82cd-7bf5294cdf29",
+        "line": 2893,
+        "version": 59651,
+        "index": 95435
       },
       {
         "id": "e0583fce-db2c-42e4-90ac-46f9a15c5577",
-        "line": 2940,
-        "version": 58113,
-        "index": 96811
+        "line": 3023,
+        "version": 59651,
+        "index": 100610
       }
     ]
   }
