@@ -20,9 +20,15 @@ from PIL import ImageEnhance
 import Warnings
 from currency import *
 import Lottery
+import aiohttp
+import warnings
+import currency
 intents = discord.Intents.default()
 intents.members = True
 
+req = requests.get("https://discord.com/api/path/to/the/endpoint")
+
+print(req.headers["Retry-After"])
 
 def makeembed(title, description):
 	embed = discord.Embed(title=title,
@@ -63,8 +69,13 @@ def get_prefix(cleint, message):
 
 
 client = discord.Client()
-client = commands.Bot(command_prefix=get_prefix)
+intents = discord.Intents.all()
+client = commands.Bot(command_prefix=get_prefix,intents=intents)
 client.remove_command('help')
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+
+client.session = aiohttp.ClientSession()
 
 @client.command()
 async def dmremind(ctx,val:str,*,val1:str=None):
@@ -249,10 +260,15 @@ async def gtn(ctx, value: int = 1, value2: int = 100):
 
 
 class MyButtons(View):
-  def __init__(self):
-    super().__init__()
-  @discord.ui.button(label="Join",style=discord.ButtonStyle.green,emoji="🎉")
+  def __init__(self,rolereq):
+    super().__init__(timeout=1000000000000)
+    self.rolereq = rolereq
+  @discord.ui.button(label="Join",style=discord.ButtonStyle.green,emoji="<a:giveaway:845903505038114867>")
   async def button_callback(self,button,interaction):
+    if self.rolereq != None:
+      if self.rolereq not in interaction.user.roles:
+        await interaction.response.send_message("First get the Required role Noob",ephemeral=True)
+        raise ConnectionError("does not contain role")
     with open('gaws.json') as f:
       Names = json.load(f)
     print(Names)
@@ -260,9 +276,14 @@ class MyButtons(View):
       await interaction.response.send_message("Dont try to join twice",ephemeral=True)
     else:
       Names.append(interaction.user.mention)
+      button1 = [x for x in self.children if x.custom_id=="joined"][0]
+      button1.label = f"People Joined: {len(Names)}"
+      await interaction.response.edit_message(view=self)
       json.dump(Names, open('gaws.json', 'w'))
-      await interaction.response.send_message("You have joined the GIVEAWAY",ephemeral=True)
-    
+      await interaction.followup.send("You have joined the GIVEAWAY",ephemeral=True)
+  @discord.ui.button(label="People Joined: 0",custom_id="joined",disabled=True)
+  async def viewjoins():
+    pass
   @discord.ui.button(label="Leave",style=discord.ButtonStyle.red,emoji="<:CatCry:826795857105256449>")
   async def button_callback1(self,button,interaction):
     with open('gaws.json') as f:
@@ -270,7 +291,11 @@ class MyButtons(View):
     oldnames = Names
     if interaction.user.mention in Names:
       Names.remove(interaction.user.mention)
-      await interaction.response.send_message("Suuccessfully removed you",ephemeral=True)
+      button1 = [x for x in self.children if x.custom_id=="joined"][0]
+      button1.label = f"People Joined: {len(Names)}"
+      await interaction.response.edit_message(view=self)
+      json.dump(Names, open('gaws.json', 'w'))
+      await interaction.followup.send("Suuccessfully removed you",ephemeral=True)
     else:
       await interaction.response.send_message("How can you leave when you didnt join?",ephemeral=True)
     
@@ -281,15 +306,20 @@ class MyButtons(View):
 @commands.has_role('Giveaway Manager')
 async def gstart(ctx,
                  minutes: str,
+                 rolereq: discord.Role,
                  channel: discord.TextChannel,
                  member: int = 1,
                  *,
                  prize: str = "ask the hoster"):
 	member10 = member
-  
-
+	await ctx.message.delete()
+	if rolereq.name== "None":
+		rolereq = None
+		rolemention = ""  
+	else:
+		rolemention = f"\n Required Role: {rolereq.mention}"
 	if "--donor" in prize:
-		donor = "Donor:" + prize.split("--donor")[-1]
+		donor = "\n Donor:" + prize.split("--donor")[-1]
 		sep = '--donor'
 		print(prize.split(':')[0])
 		prize = prize.split(sep)[0]
@@ -298,12 +328,10 @@ async def gstart(ctx,
 	something = ""
 	with open('gaws.json','w') as f:
 		json.dump([],f)
-
-  
 	#if channel == None:
 	#channel = ctx.channel
 	title = f"**{prize}**"
-	description = f"**React with 🎉 to Enter!\nHosted by: {ctx.author.mention} \n {donor}**"
+	description = f"Click with <a:giveaway:845903505038114867> to Enter!\n**Hosted by: {ctx.author.mention} {donor} {rolemention} **"
 	myembed = discord.Embed(title=title,
 	                        description=description,
 	                        colour=ctx.author.color)
@@ -323,7 +351,7 @@ async def gstart(ctx,
 	#end = datetime.datetime.utcnow() + datetime.timedelta(seconds = minutes*60)
 
 	myembed.add_field(name="ends in:", value=f"{minutes}")
-	view = MyButtons()
+	view = MyButtons(rolereq)
 	try:
 		msg = await channel.send("🎉🎉**GIVEAWAY**🎉🎉",embed=myembed,view=view)
 	except:
@@ -364,11 +392,11 @@ async def gstart(ctx,
 	for x in range(0,member10):
 		with open('gaws.json') as f:
 				Names = json.load(f)
-		if Names == []:
-			mlist.append(None)
+
 		something = getwinner(Names)
 		mlist.append(something)
-		Names.remove(something)
+		if something != "NOBODY":
+			Names.remove(something)
 		with open('gaws.json','w') as f:
 			json.dump(Names,f)
 	#if winner == client.user:
@@ -380,6 +408,10 @@ async def gstart(ctx,
 	description = f"{res} won the giveaway"
 	myembed = makeembed(title, description)
 	await msg.edit(embed=myembed,content="🎉🎉**GIVEAWAY ENDED**🎉🎉",view=None)
+	val = await channel.send(ctx.author.mention)
+	await asyncio.sleep(5)
+	await val.delete()
+
 
 
 
@@ -546,7 +578,7 @@ async def help(ctx):
 		em.add_field(
 		    name="<a:DIcoin:922797912977719368> Currency",
 		    value=
-		    "```bal,daily,work,give,gamble,beg,coinflip```",
+		    "```bal,daily,work,give,gamble,beg,shop,buy```",
 		    inline=False)
 		em.add_field(
 		    name="<:ban_hammer:869070330222743592> Utility",
@@ -967,12 +999,12 @@ async def giveawaystart(ctx):
 	em.add_field(
 	    name="command",
 	    value=
-	    f"```{prefixes[str(ctx.guild.id)]}giveawaystart <time (example: 2s)><channel><message(optional)>```",
+	    f"```{prefixes[str(ctx.guild.id)]}giveawaystart <time (example: 2s)><role:Else None> <channel> <winners> <message(optional)>```",
 	    inline=False)
 	em.add_field(
 	    name="aliases",
 	    value=
-	    f"```{prefixes[str(ctx.guild.id)]}gstart <time (example: 2s)><channel><message(optional)>```",
+	    f"```{prefixes[str(ctx.guild.id)]}gstart <time (example: 2s)><role:Else None> <channel> <winners> <message(optional)>```",
 	    inline=False)
 	em.add_field(
 	    name="description",
@@ -998,13 +1030,13 @@ async def l(ctx):
 	    name="functions",
 	    value=
 	    f"```there are 6 functions```Next paragraphs will explain them \n ",inline=False)
-	em.add_field(name="add",value="```there are 6 functions```Next paragraphs will explain them \n                                     ```add```- adds tickets to the user requires you to mention user and no of lotteries. Example:```{prefixes[str(ctx.guild.id)]}lottery add @Akashdeep(mention user here) 2(or any number of tickets you want)``` ",inline= False)
-	em.add_field(name="remove",value="removes tickets like the add function and same arguments are required. \n Example ```{prefixes[str(ctx.guild.id)]}lottery remove @Akashdeep(mention user here) 2(or any number of tickets you want)```",inline=False)
-	em.add_field(name="show",value="Shows all users of the lottery , Doesnt need any arguments Example ```{prefixes[str(ctx.guild.id)]}lottery show```",inline=False)
-	em.add_field(name="showmember",value="Shows the number of lotteries for only 1 user , you have to define the member. Example ```{prefixes[str(ctx.guild.id)]}lottery showmember @Akashdeep(or any member)```",inline=False)
-	em.add_field(name="clear",value="Clears all users in lottery (if you cancelled one) no arguments required Example ```{prefixes[str(ctx.guild.id)]}lottery clear```",inline=False)
+	em.add_field(name="add",value=f"adds tickets to the user requires you to mention user and no of lotteries. Example:```{prefixes[str(ctx.guild.id)]}lottery add @Akashdeep(mention user here) 2(or any number of tickets you want)``` ",inline= False)
+	em.add_field(name="remove",value=f"removes ticket number and only number needs to be specified. \n Example ```{prefixes[str(ctx.guild.id)]}lottery remove 2(or any number)```",inline=False)
+	em.add_field(name="show",value=f"Shows all users of the lottery , Doesnt need any arguments Example ```{prefixes[str(ctx.guild.id)]}lottery show```",inline=False)
+	em.add_field(name="shownumber",value=f"Shows the owner of a specific lottery number , you have to define the number. Example ```{prefixes[str(ctx.guild.id)]}lottery showmember number```",inline=False)
+	em.add_field(name="clear",value=f"Clears all users in lottery (if you cancelled one) no arguments required Example ```{prefixes[str(ctx.guild.id)]}lottery clear```",inline=False)
 
-	em.add_field(name="winner",value="Announces the winner and clears the lottery too Example ```{prefixes[str(ctx.guild.id)]}lottery winner```",inline=False)
+	em.add_field(name="winner",value=f"Announces the winner and clears the lottery too Example ```{prefixes[str(ctx.guild.id)]}lottery winner```",inline=False)
 
 	em.add_field(
 	    name="description",
@@ -1157,22 +1189,21 @@ async def randomnumber(ctx):
 
 
 @client.command(aliases=['gawping'])
-async def ping(ctx, message: str = "Just Trying to be quiet"):
+async def ping(ctx,*, message: str = "Just Trying to be quiet"):
 	gawchannel = [
 	    839483172671455243, 839887476960264233, 839483172671455243,
 	    839482877225992263, 847389751527211038
 	]
 	if ctx.message.channel.id in gawchannel:
-		await ctx.send("<@&821578275381706812>")
 		giveaway = makeembed(
 		    title=
 		    '**<:tada:865900512988758046>Dank island Giveaways<:tada:865900512988758046>**',
 		    description=f'**Host** - {ctx.author.name}\n **message** {message}'
 		)
-		await ctx.send(embed=giveaway)
+		await ctx.send("<@&821578275381706812>",embed=giveaway)
 		pass
 	else:
-		await ctx.send("breh this is not the correct channel")
+		await ctx.send("It can only be used in Giveaway Channels")
 
 
 @client.command()
@@ -1334,7 +1365,7 @@ async def invert(ctx, Member: discord.Member = None):
 	if Member == None:
 		Member = ctx.author
 
-	asset = Member.avatar_with_size(1024)
+	asset = Member.avatar.with_size(1024)
 	data = BytesIO(await asset.read())
 	pfp = Image.open(data)
 	pfp = ImageOps.invert(pfp)
@@ -1965,7 +1996,106 @@ def removenum(member):
 		json.dump(lotto, f)"""
 
 
+
+
+@client.group(invoke_without_command=True,aliases=['l','lottery'])
+async def lotto(ctx, x: str, value : int = None , Member: discord.Member = None):
+  pass
+
+@lotto.command(aliases=["add","increase"])
+@commands.has_permissions(ban_members=True)
+async def ad(ctx,value:int=None,Member:discord.Member=None):
+		channel1 = client.get_channel(897344986935328780)
+
+		if value == None:
+			await ctx.send("WHAT to add breh")
+
+		await ctx.message.delete()
+		if value > 100:
+			await ctx.send("The max limit of tickets is 100")
+		if value == None:
+			await ctx.send("breh tell me how many tickets to add")
+			return
+		somestr = ""
+		for _ in range(value):
+			val = Lottery.insert(Member.name,Member.id)
+			somestr = somestr + f"`{str(val)}`" + ","
+		await ctx.send(f"Successfully added tickets to that user, thier number is/are {somestr}")
+		await channel1.send(f"{Member.mention}'s entry no/s: {somestr.rstrip(',')}")
+@lotto.command(aliases=["rem","remove"])
+@commands.has_permissions(ban_members=True)
+async def rm(ctx,value:int,Member:discord.Member):
+
+		channel1 = client.get_channel(897344986935328780)
+		print(Member)
+		check = Lottery.delete(value)
+		if check == -1:
+			await ctx.send("the number doesnt exist")
+			return
+		await ctx.send(f"Succesfuly remove {value} ticket number from that user")
+		await channel1.send(f"{value} Ticket has been Removed")
+@lotto.command()
+async def shownumber(ctx,value:int):
+		a = Lottery.view()
+		if a == []:
+			await ctx.send("lottery is empty")
+		for x in a:
+			if x[2] == value:
+				val = x
+		if val in locals():
+			await ctx.send("The ticket is unowned")
+			return
+		await ctx.send(
+		    f"The ticket Number {val[2]} is owned by {val[0]}")
+@lotto.command()
+@commands.has_permissions(ban_members=True)
+async def winner(ctx):
+		something = Lottery.view()
+		channel1 = client.get_channel(897344986935328780)
+		answer = random.choice(something)
+		embed = makeembed("The Winner is to be Announced",
+		                  f"The winner is ||<@{answer[1]}>|| and Ticket Number {answer[2]}, Congratulations 🎉🎉🎉")
+		await ctx.send(embed=embed)
+		await channel1.send(embed=embed)
+@lotto.command(aliases=["view"])
+async def show(ctx):
+		something = Lottery.view()
+		if something == []:
+			await ctx.send("Lottery doesnt contain anything")
+			return
+		somestr1 = ""
+		someset = set()
+		for _ in something:
+			someset.add(_[0])
+		for s in someset:
+			a = Lottery.viewspl(s)
+			print(a)
+
+			somestr = ""
+			for value in a:
+			  val = value[2]      
+			  somestr = somestr + f"`{str(val)}`" + ","
+			somestr1 = somestr1 + f"**<@!{a[0][1]}>**'s entries:{somestr.rstrip(',')} 🎟️\n"
+		embed = discord.Embed(title="Dank Island lottery",
+	                      description=f"{somestr1}",
+	                      colour=0x2C70D4)
+		embed.set_footer(
+	    text=f'{len(something)} Entries ')
+		embed.timestamp = datetime.datetime.utcnow()
+		await ctx.send(embed=embed)
+@lotto.command(aliases=["empty"])
+@commands.has_permissions(ban_members=True)
+async def clear(ctx):
+
+		Lottery.clear()
+		channel1 = client.get_channel(897344986935328780)
+		await ctx.send("Cleared the lottery")
+		await channel1.send("The Lottery has been Cleared")
+
 class buttonview(View):
+	def __init__(self,ctx):
+		self.ctx = ctx
+		super().__init__(timeout=1000000000000)
 	@discord.ui.button(label="Previous",style=discord.ButtonStyle.green)
 	async def button_callback(self,button,interaction):
 		with open('mygaw.json') as f:
@@ -1984,9 +2114,9 @@ class buttonview(View):
 
 
 		if someval == []:
-			await interaction.response.edit_message(embed = makeembed("Dank Island Lottery",f" Ticket Number {value} doesnt exist"))
+			await interaction.response.edit_message(embed = makeembed("Lottery Entries",f" Ticket Number {value} doesnt exist"))
 		else:
-			await interaction.response.edit_message(embed=makeembed("Dank Island Lottery",f"The owner of this lottery Number is : {someval[0][0]} \nLottery Number is {someval[0][2]}"))
+			await interaction.response.edit_message(embed=makeembed("Lottery Entries",f"**Entry no:** {someval[0][2]} \n **Owned by :** <@{someval[0][1]}>"))
 	@discord.ui.button(label="Delete",style=discord.ButtonStyle.red)
 	async def button_callback1(self,button,interaction):
 		with open('mygaw.json') as f:
@@ -1994,12 +2124,16 @@ class buttonview(View):
 		if val[1] != interaction.user.name:
 			await interaction.response.send_message(f"You cant click this",ephemeral=True)
 			raise ConnectionError("Wrong Output")
+		role = discord.utils.get(self.ctx.guild.roles,name=("Admin"))
+		if role not in self.ctx.author.roles:
+			await interaction.response.send_message(f"You cant do it lol",ephemeral=True)
+			raise ConnectionError("Needs role")
 		value = val[0]
 		check = Lottery.delete(value)
 		if check == -1:
 			await interaction.response.send_message(f"Dont try to delete a empty ticket",ephemeral=True)
 			raise ValueError("No number defined")
-		await interaction.response.edit_message(embed = makeembed("Dank Island Lottery",f" Ticket Number {value} has been deleted"))
+		await interaction.response.edit_message(embed = makeembed("Lottery Entries",f" Ticket Number {value} has been deleted"))
 		await interaction.followup.send(f"Succesfuly remove {value} ticket number from that user")
 
     
@@ -2018,78 +2152,13 @@ class buttonview(View):
 			json.dump(val , f)
 		someval = Lottery.viewnum(value)
 		if someval == []:
-			await interaction.response.edit_message(embed = makeembed("Dank Island Lottery",f" Ticket Number {value} doesnt exist"))
+			await interaction.response.edit_message(embed = makeembed("Lottery Entries",f" Ticket Number {value} doesnt exist"))
 		else:
-			await interaction.response.edit_message(embed = makeembed("Dank Island Lottery",f"The owner of this lottery Number is : {someval[0][0]} \nLottery Number is {someval[0][2]}"))
+			await interaction.response.edit_message(embed = makeembed("Lottery Entries",f"**Entry no:** {someval[0][2]} \n **Owned by : <@{someval[0][1]}>**"))
 
 
-
-@client.command(aliases=['lottery', 'l'])
-@commands.has_role('Admin')
-async def lotto(ctx, x: str, value : int = None , Member: discord.Member = None):
-	if x == "add":
-		if value > 100:
-			await ctx.send("The max limit of tickets is 100")
-		if value == None:
-			await ctx.send("breh tell me how many tickets to add")
-			return
-		somestr = ""
-		for _ in range(value):
-			val = Lottery.insert(Member.name,Member.id)
-			somestr = somestr + str(val) + ","
-		await ctx.send(f"Successfully added tickets to that user, thier number is/are {somestr}")
-	if x == "remove":
-		if value == None:
-			await ctx.send("breh tell me how many tickets to remove")
-			return
-		print(value)
-		print(Member)
-		check = Lottery.delete(value)
-		if check == -1:
-			await ctx.send("the number doesnt exist")
-			return
-		await ctx.send(f"Succesfuly remove {value} ticket number from that user")
-	if x == "shownumber":
-		a = Lottery.view()
-		if a == []:
-			await ctx.send("lottery is empty")
-		for x in a:
-			if x[2] == value:
-				val = x
-		if val in locals():
-			await ctx.send("The ticket is unowned")
-			return
-		await ctx.send(
-		    f"The ticket Number {val[2]} is owned by {val[0]}")
-	if x == "winner":
-		something = Lottery.view()
-		answer = random.choice(something)
-		embed = makeembed("The Winner is to be Announced",
-		                  f"The winner is ||<@{answer[1]}>|| and Ticket Number {answer[2]}, Congratulations 🎉🎉🎉")
-		await ctx.send(embed=embed)
-	if x == "show":
-		something = Lottery.view()
-		if something == []:
-			await ctx.send("Lottery doesnt contain anything")
-		somestr1 = ""
-		someset = set()
-		for _ in something:
-			someset.add(_[0])
-		for s in someset:
-			a = Lottery.viewspl(s)
-			print(a)
-
-			somestr = ""
-			for value in a:
-			  val = value[2]      
-			  somestr = somestr + str(val) + ","
-			somestr1 = somestr1 + f"{a[0][0]} has {somestr.rstrip(',')} number/s \n"
-			
-		await ctx.send(embed=makeembed("Dank Island lottery",f"{somestr1}"))
-	if x == "clear":
-		Lottery.clear()
-		await ctx.send("Cleared the lottery")
-	if x == "surf":
+@lotto.command()
+async def surf(ctx):
 		with open('mygaw.json','w') as f:
 			json.dump([] , f)
 		smth = Lottery.view()
@@ -2101,8 +2170,8 @@ async def lotto(ctx, x: str, value : int = None , Member: discord.Member = None)
 			val = [0,ctx.author.name]
 		with open('mygaw.json','w') as f:
 			json.dump(val , f)
-		view = buttonview()
-		await ctx.send(embed=makeembed("Dank Island Lottery",f"The owner of this lottery is : {smth[0][0]} \nLottery Number is {smth[0][2]}"),view=view)
+		view = buttonview(ctx)
+		await ctx.send(embed=makeembed("Lottery Entries",f"**Entry no:** {smth[0][2]} \n **Owned by :** <@{smth[0][1]}>"),view=view)
 		
 
 @client.command(aliases=["lockdown"])
@@ -2508,9 +2577,9 @@ async def makenew(ctx,member : discord.Member = None,amount : str=None):
     return
   await ctx.send("The Member is Created Successfully")
 
-@client.command(aliases=['lb'])
+@client.command(aliases=['donolb','dlb'])
 @commands.has_permissions(manage_messages=True)
-async def leaderboard(ctx):
+async def donoleaderboard(ctx):
   value = Warnings.view(1,2)
   if value == []:
     await ctx.send("if all donations are empty then how are you supoosed to have a leaderboard")
@@ -2714,6 +2783,10 @@ async def give(ctx,member : discord.Member = None , amt : str = None):
     await ctx.send("WHAT DO YOU EVEN WANT TO GIVE")
     return
   val = await get_error(ctx,amt)
+  value = viewnum(ctx.author.id) 
+  if value[0][2] < val:
+        await ctx.send("You dont have that much money")
+        return -1
   amt = val
   if val == -1:
     return
@@ -2733,9 +2806,12 @@ async def give(ctx,member : discord.Member = None , amt : str = None):
   update(member.id,member.name,amt)
   await ctx.send(embed=makeembed("Amount Transfer",f"{ctx.author.mention} gave {amt} to {member.mention}"))
 
-@client.command()
-async def test(ctx):
-  await ctx.send(embed=makeembed("<a:blob:837976444888940565>","WOAT <a:blob:837976444888940565>"))
+@client.command(aliases=["stop","shutdown"])
+@commands.has_role('Admin')
+async def dead(ctx):
+  await ctx.send("Ok i logged off")
+  print(ctx.author.name,"made me log off ")
+  exit()
 
 @client.command(aliases=["bet"])
 @commands.cooldown(1, 5, commands.BucketType.user)
@@ -2746,6 +2822,10 @@ async def gamble(ctx,amt:str=None):
   if amt == None:
     await ctx.send("Mention Amount as well")
   val = await get_error(ctx,amt)
+  value = viewnum(ctx.author.id) 
+  if value[0][2] < val:
+        await ctx.send("You dont have that much money")
+        return -1
   amt = val
   if val == -1:
     return
@@ -2803,7 +2883,7 @@ async def gamble(ctx,amt:str=None):
 
 
   
-mainshop = [{"name":"smallexp","price":5000,"description":"increases 1x multiplier , good for grinding amari exp","code":""},{"name":"rainbow","price":10000,"description":"Changes colours every 10 minutes , you can change it again if you want","code":"Rainbow"}]
+mainshop = [{"name":"smallexp","price":12000,"description":"increases 1x multiplier , good for grinding amari exp","code":"1x amari"},{"name":"rainbow","price":10000,"description":"Changes colours every 10 minutes , you can change it again if you want","code":"Rainbow"},{"name":"money","price":10995769,"description":"mONEY","code":"Gay"}]
 
 @client.command(aliases=["market","shopping"])
 async def shop(ctx,item:str=None):
@@ -2825,7 +2905,7 @@ async def shop(ctx,item:str=None):
       await ctx.send("Item not Found")
     await ctx.send(embed=makeembed("Dank Island Shop",f"**{someth['name']}** \n```Price: {someth['price']}``` \n               {someth['description']}"))
 
-@client.command(aliases=["purchase"])
+@client.command(aliases=["purchase","earn"])
 async def buy(ctx,item:str=None):
   if item == None:
     await ctx.send('what do you even want to buy huh?')
@@ -3013,6 +3093,11 @@ async def roulette(ctx,amt:str=None):
     await ctx.send("give me a valid bet")
     return
   val = await get_error(ctx,amt)
+  value = viewnum(ctx.author.id) 
+  if value[0][2] < val:
+        await ctx.send("You dont have that much money")
+        return -1
+  
   if val == -1:
     return
   amt = val
@@ -3040,6 +3125,10 @@ async def flip(ctx,answer:str=None,amount:str=None):
     if answer not in ["heads","tails"]:
       await ctx.send("Give me a guess dude")
     amount = await get_error(ctx,amount)
+    val = viewnum(ctx.author.id) 
+    if val[0][2] < amount:
+        await ctx.send("You dont have that much money")
+        return -1
     if amount == -1:
       return
     if amount < 50:
@@ -3110,8 +3199,45 @@ async def remdev(ctx,amount:str=None,member:discord.Member=None):
     return
   update(member.id,member.name,val,boolean=False)
 
+@client.command()
+@commands.is_owner()
+async def toggle(ctx, *, command):
+  command = client.get_command(command)
 
+  if command is None:
+    embed = discord.Embed(title="ERROR", description="I can't find a command with that name!", color=0xff0000)
+    await ctx.send(embed=embed)
 
+  elif ctx.command == command:
+    embed = discord.Embed(title="ERROR", description="You cannot disable this command.", color=0xff0000)
+    await ctx.send(embed=embed)
+  else:
+            command.enabled = not command.enabled
+            ternary = "enabled" if command.enabled else "disabled"
+            embed = discord.Embed(title="Toggle", description=f"I have {ternary} {command.qualified_name} for you!", color=0xff00c8)
+            await ctx.send(embed=embed)
+
+@client.command(aliases=['lb'])
+@commands.has_permissions(manage_messages=True)
+async def leaderboard(ctx):
+  value = currency.view()
+  mylist = {}
+  for x in value:
+    mylist[x[1]] = x[2]
+  mylist = dict(sorted(mylist.items(), key=lambda item: item[1],reverse=True))
+  if len(mylist) >= 10:
+    somv = list(mylist)[0:10]
+    newdict = {}
+    for x in somv:
+      newdict[x] = mylist[x]
+    mylist = newdict
+  mystr = ""
+  y = 1
+  for x in mylist:
+    mystr = mystr +"\n"+f"{y}. **{str(x)}** has **{mylist[x]}** "
+    y = y+1
+  mystr.rstrip(",")
+  await ctx.send(embed=makeembed('Dank Island Donations',mystr))
 async def get_error(ctx,amt):
   val = viewnum(ctx.author.id)
   if val == []:
@@ -3145,14 +3271,6 @@ async def get_error(ctx,amt):
     await ctx.send("You dont have that much money")
     return -1
 
-
-    
-
-  
-  
-
-     
-  
 
 
 keep_alive()

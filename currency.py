@@ -49,6 +49,7 @@ def update(id,name,money,boolean = True,database="warns"):
         money = myval-money
     
     cur.execute(f"UPDATE {database} SET money=? WHERE id=?",(money,id))
+    print(f"{myval} got changed to {money} from {name}")
     conn.commit()
     conn.close()
 
@@ -115,6 +116,3 @@ def view(database="warns"):
     rows = cur.fetchall()
     conn.close()
     return rows
-
-
-create_table()
