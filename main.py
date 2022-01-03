@@ -20,15 +20,13 @@ from PIL import ImageEnhance
 import Warnings
 from currency import *
 import Lottery
-import aiohttp
 import warnings
 import currency
+import suggestions
 intents = discord.Intents.default()
 intents.members = True
 
-req = requests.get("https://discord.com/api/path/to/the/endpoint")
 
-print(req.headers["Retry-After"])
 
 def makeembed(title, description):
 	embed = discord.Embed(title=title,
@@ -74,8 +72,6 @@ client = commands.Bot(command_prefix=get_prefix,intents=intents)
 client.remove_command('help')
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-
-client.session = aiohttp.ClientSession()
 
 @client.command()
 async def dmremind(ctx,val:str,*,val1:str=None):
@@ -583,7 +579,7 @@ async def help(ctx):
 		em.add_field(
 		    name="<:ban_hammer:869070330222743592> Utility",
 		    value=
-		    "```ping,prefix,giveawaystart,partner,eventlock,eventunlock,snipe,dmremind,timer```",
+		    "```ping,prefix,giveawaystart,partner,eventlock,eventunlock,snipe,dmremind,timer,suggest```",
 		    inline=False)
 		em.add_field(
 		    name="💸 Donations",
@@ -930,7 +926,7 @@ async def temprature(ctx):
 	await ctx.send(embed=em)
 
 
-@help.command(aliases=['flip'])
+@help.command(aliases=['flip','cf'])
 async def coinflip(ctx):
 	with open("prefixes.json") as f:
 		prefixes = json.load(f)
@@ -1462,6 +1458,7 @@ async def nuke(ctx):
       nukeembed.timestamp = datetime.datetime.utcnow()
       await mymsg.edit(embed = nukeembed)
       mnumber += 9
+      time.sleep(1)
      
     nukeend = discord.Embed(
       title='** Nuked The Server **',
@@ -1556,7 +1553,7 @@ class MyView(View):
         
     else:
         await interaction.response.send_message(
-				    'AHHHH man , how can you even leave when you havent even joined'
+				    'AHHHH man , how can you even leave when you havent even joined',ephemeral=True
 				)
   @discord.ui.button(label="Start",style=discord.ButtonStyle.green)
   async def button_callback2(self,button,interaction):
@@ -2245,11 +2242,6 @@ async def on_command_error(ctx, error):
 	if isinstance(error, commands.MissingPermissions):
 		await ctx.send(error)
 		await ctx.message.delete()
-	elif isinstance(error, commands.MissingRequiredArgument):
-		await ctx.send(
-		    "You have Used this Command IncorrectlyType The help of this Command and Write the Arguments required Properly"
-		)
-		await ctx.message.delete()
 	elif isinstance(error, commands.CommandOnCooldown):
 		val = stotime(float(error.retry_after))
 		em = makeembed(title=f"Slow it down bro!",description=f"Try again in {val}")
@@ -2260,8 +2252,14 @@ async def on_command_error(ctx, error):
 	elif isinstance(error, commands.ChannelNotFound):
 		await ctx.send(error)
 		await ctx.message.delete()
+	elif isinstance(error,commands.CommandNotFound):
+		pass
 
-	else:		raise error
+	else:
+		await ctx.send(error)
+		print(error)	
+		raise error
+
 
 def stotime(seconds):
     seconds = seconds % (24 * 3600)
@@ -2280,6 +2278,14 @@ async def on_message_delete(message):
     snipe_message_content.append(message)
 
     await asyncio.sleep(60)
+  
+@client.command(pass_context=True)
+async def latency(ctx):
+    before = time.monotonic()
+    message = await ctx.send("Pong!")
+    ping = (time.monotonic() - before) * 1000
+    await message.edit(content=f"Pong!  `{int(ping)}ms`")
+    print(f'Ping {int(ping)}ms')
 
 
 @client.command()
@@ -2883,7 +2889,7 @@ async def gamble(ctx,amt:str=None):
 
 
   
-mainshop = [{"name":"smallexp","price":12000,"description":"increases 1x multiplier , good for grinding amari exp","code":"1x amari"},{"name":"rainbow","price":10000,"description":"Changes colours every 10 minutes , you can change it again if you want","code":"Rainbow"},{"name":"money","price":10995769,"description":"mONEY","code":"Gay"}]
+mainshop = [{"name":"smallexp","price":12000,"description":"increases 1x multiplier , good for grinding amari exp","code":"1x amari"},{"name":"rainbow","price":10000,"description":"Changes colours every 10 minutes , you can change it again if you want","code":"Rainbow"},{"name":"Mediumexp","price":100000,"description":"increases 2x multiplier , good for grinding amari exp","code":"2x amari"}]
 
 @client.command(aliases=["market","shopping"])
 async def shop(ctx,item:str=None):
@@ -3110,7 +3116,7 @@ async def roulette(ctx,amt:str=None):
   view = Buttons(ctx,client,amt)
   await ctx.send(embed=makeembed(f"{ctx.author.name}'s roulette","Guess the right Number/colour/odd-even/Highlow"),view=view)
 
-@client.command(aliases=['coinflip'])
+@client.command(aliases=['coinflip','cf'])
 @commands.cooldown(1, 4, commands.BucketType.user)
 async def flip(ctx,answer:str=None,amount:str=None):
   if answer == None:
@@ -3237,7 +3243,7 @@ async def leaderboard(ctx):
     mystr = mystr +"\n"+f"{y}. **{str(x)}** has **{mylist[x]}** "
     y = y+1
   mystr.rstrip(",")
-  await ctx.send(embed=makeembed('Dank Island Donations',mystr))
+  await ctx.send(embed=makeembed('Dank Island Money Leaderboard',mystr))
 async def get_error(ctx,amt):
   val = viewnum(ctx.author.id)
   if val == []:
@@ -3271,7 +3277,156 @@ async def get_error(ctx,amt):
     await ctx.send("You dont have that much money")
     return -1
 
+@client.command()  
+async def randomuser(ctx,*, role: discord.Role):
+    empty = []
+    for user in ctx.guild.members:
+        if role in user.roles:
+          empty.append(user)
+    if empty ==[]:
+      await ctx.send("No one is in that role")
+      return
+    else:
+      val = random.choice(empty)
+      await ctx.send(embed=makeembed("Random Member",f"<@!{val.id}> is a random member in {role.mention}"))
 
+@client.command()
+async def suggest(ctx,*,message:str):
+  val = suggestions.insert(ctx.author.id,message,ctx.channel.id)
+  
+  await ctx.send(embed=makeembed("Suggestion",f"Your Suggestion has been submitted and you will get a response soon , Your id is #{val}"))
+  channel = client.get_channel(927077530282885171)
+  embed=makeembed(f"Suggestion #{val}",f"**{message}**")
+  embed.set_author(name= f"{ctx.author.name}#{ctx.author.discriminator}",icon_url=ctx.author.avatar.url)
+
+  value = await channel.send(embed=embed)
+  print(val,value.id)
+  suggestions.addmsg(val,value.id)
+
+
+@client.command()
+async def drop(ctx):
+  suggestions.delete_table()
+  await ctx.send("Deleted")
+  suggestions.create_table()
+
+@client.command()
+@commands.is_owner()
+async def accept(ctx,id:int,*,reason:str=""):
+  channel = client.get_channel(927077530282885171)
+  val = suggestions.viewspl(id)
+  if val == []:
+    await ctx.send("The Suggestion is invalid")
+    return
+  if val[0][3] != "Not Answered":
+    await ctx.send("Its already responded by you")
+    return
+
+  message = await channel.fetch_message(val[0][4])
+  user = client.get_user(val[0][0])
+  if reason == "":
+    reason = "No reason given"
+  suggestions.update(val[0][2],reason,"Accepted")
+  embed=discord.Embed(title=f"Suggestion Accepted #{val[0][2]}",
+	                    description=f"**{val[0][1]}** \n Reason by Akashdeep#9572: {reason}",colour=0x13e82b)
+  embed.set_footer(
+	    text='Dank Island ',
+	    icon_url=
+	    'https://cdn.discordapp.com/icons/821575403855544370/a_85c6630c72154018ecc7740c58411dea.gif?size=128'
+	)
+  embed.timestamp = datetime.datetime.utcnow()
+  embed.set_author(name= f"{user.name}#{user.discriminator}",icon_url=user.avatar.url)
+  member = await ctx.guild.fetch_member(val[0][0])
+  await member.send(f"Your suggestion {val[0][1]} has been Accepted by Akashdeep#9572 with reason: {reason}")
+
+  await message.edit(embed=embed)
+  await ctx.send("Successfully accepted that")
+
+
+@client.command()
+@commands.is_owner()
+async def consider(ctx,id:int,*,reason:str=""):
+  channel = client.get_channel(927077530282885171)
+  val = suggestions.viewspl(id)
+  if val == []:
+    await ctx.send("The Suggestion is invalid")
+    return
+  if val[0][3] != "Not Answered":
+    await ctx.send("Its already responded by you")
+    return
+
+  message = await channel.fetch_message(val[0][4])
+  user = client.get_user(val[0][0])
+  if reason == "":
+    reason = "No reason given"
+  suggestions.update(val[0][2],reason,"Considered")
+  embed=discord.Embed(title=f"Suggestion Considered #{val[0][2]}",
+	                    description=f"**{val[0][1]}** \n Reason by Akashdeep#9572: {reason}",colour=0xfcd62d)
+  embed.set_footer(
+	    text='Dank Island ',
+	    icon_url=
+	    'https://cdn.discordapp.com/icons/821575403855544370/a_85c6630c72154018ecc7740c58411dea.gif?size=128'
+	)
+  embed.timestamp = datetime.datetime.utcnow()
+  embed.set_author(name= f"{user.name}#{user.discriminator}",icon_url=user.avatar.url)
+  member = await ctx.guild.fetch_member(val[0][0])
+  await member.send(f"Your suggestion {val[0][1]} has been Considered by Akashdeep#9572 with reason: {reason}")
+
+  await message.edit(embed=embed)
+  await ctx.send("Successfully Considered that")
+  
+@client.command()
+async def status(ctx,id:int):
+  val = suggestions.viewspl(id)
+  if val == []:
+    await ctx.send("The Suggestion is invalid")
+    return
+  user = client.get_user(val[0][0])
+  mdict = {"Considered":0xfcd62d,"Accepted":0x13e82b,"Denied":0xf71307,"Not Answered":0xf7c707}
+
+  embed=discord.Embed(title=f"Suggestion {val[0][3]} #{val[0][2]}",
+	                    description=f"**{val[0][1]}** \n Reason by Akashdeep#9572: {val[0][5]}",colour=mdict[val[0][3]])
+  embed.set_footer(
+	    text='Dank Island ',
+	    icon_url=
+	    'https://cdn.discordapp.com/icons/821575403855544370/a_85c6630c72154018ecc7740c58411dea.gif?size=128'
+	)
+  embed.timestamp = datetime.datetime.utcnow()
+  embed.set_author(name= f"{user.name}#{user.discriminator}",icon_url=user.avatar.url)
+  await ctx.send(embed=embed)
+
+@client.command()
+@commands.is_owner()
+async def deny(ctx,id:int,*,reason:str):
+  channel = client.get_channel(927077530282885171)
+  val = suggestions.viewspl(id)
+  if val == []:
+    await ctx.send("The Suggestion is invalid")
+    return
+  if val[0][3] != "Not Answered":
+    await ctx.send("Its already responded by you")
+    return
+
+  message = await channel.fetch_message(val[0][4])
+  user = client.get_user(val[0][0])
+  if reason == "":
+    reason = "No reason given"
+  suggestions.update(val[0][2],reason,"Denied")
+  embed=discord.Embed(title=f"Suggestion Denied #{val[0][2]}",
+	                    description=f"**{val[0][1]}** \n Reason by Akashdeep#9572: {reason}",colour=0xf71307)
+  embed.set_footer(
+	    text='Dank Island ',
+	    icon_url=
+	    'https://cdn.discordapp.com/icons/821575403855544370/a_85c6630c72154018ecc7740c58411dea.gif?size=128'
+	)
+  embed.timestamp = datetime.datetime.utcnow()
+  embed.set_author(name= f"{user.name}#{user.discriminator}",icon_url=user.avatar.url)
+  member = await ctx.guild.fetch_member(val[0][0])
+  await member.send(f"Your suggestion {val[0][1]} has been Denied by Akashdeep#9572 with reason: {reason}")
+
+  await message.edit(embed=embed)
+  await ctx.send("Successfully Denied that")
+    
 
 keep_alive()
 client.run(os.environ['TOKEN'])
