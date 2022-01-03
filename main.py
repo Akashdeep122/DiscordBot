@@ -1391,6 +1391,7 @@ async def roblox(ctx, Member: discord.Member = None):
 
 
 @client.command(aliases=['spank'])
+@commands.cooldown(1, 4, commands.BucketType.user)
 async def slap(ctx, Member1: discord.Member = None):
 	#if Member == None:
 	#Member1 = Member
@@ -1425,6 +1426,7 @@ async def slap(ctx, Member1: discord.Member = None):
 	#await ctx.send(file=discord.File('world-map.gif'))
 	#flip = ["Heads","Tails"]
 @client.command(aliases=['applause'])
+@commands.cooldown(1, 3, commands.BucketType.user)
 async def clap(ctx):
 	mylist = [
 	    'https://media.tenor.com/images/af3285a51b9ae2fbe2a574169ac8610c/tenor.png',
@@ -1439,6 +1441,7 @@ async def clap(ctx):
 
 
 @client.command(aliases=['raid'])
+@commands.cooldown(1, 10, commands.BucketType.user)
 async def nuke(ctx):
     mnumber = 1
     nukeembed = discord.Embed(
@@ -1620,6 +1623,7 @@ class MyView(View):
     
 
 @client.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
 async def battlebot(ctx,value:int=5):
   if value > 10:
     await ctx.send("DONT Try FLOOD THE BOT LIKE THAT NOOB")
@@ -1698,6 +1702,7 @@ async def battlebot(ctx,value:int=5):
   json.dump(Names, open('Names.json', 'w'))"""
 
 @client.command()
+@commands.cooldown(1, 10, commands.BucketType.channel)
 async def battlestart(ctx):
   Names = {}
   def check(m):
@@ -1831,8 +1836,7 @@ async def on_message(message):
 			)
 			a = time.time()
 			b = 0
-			await message.channel.send("quickly setting a match with 5 bots")
-			while (b < 30):
+			await message.channel.send("quickly 
 				b = time.time() - a
 				with open('Names.json', 'r') as f:
 					Names = json.load(f)
@@ -1896,7 +1900,8 @@ async def on_message(message):
 			else:
 				await message.channel.send(
 				    'AHHHH man , how can you even leave when you havent even joined'
-				)
+				)setting a match with 5 bots")
+			while (b < 30):
 	await client.process_commands(message)
 
 	#await client.edit_role(server='547874634978789398', role='' ,colour=0x008000)
@@ -1912,6 +1917,7 @@ async def on_message(message):
 
 
 @client.command(aliases=["dict", 'meaning'])
+@commands.cooldown(1, 3, commands.BucketType.user)
 async def dictionary(ctx, *, message: str = None):
 	if message == None:
 		await ctx.send('Please Tell me a word also')
@@ -1936,6 +1942,7 @@ def makeword(data):
 
 
 @client.command(aliases=['fastestwordfirst'])
+@commands.cooldown(1, 10, commands.BucketType.channel)
 async def fwf(ctx):
 	data = json.load(open("data.json"))
 	myword = makeword(data)
@@ -1996,6 +2003,7 @@ def removenum(member):
 
 
 @client.group(invoke_without_command=True,aliases=['l','lottery'])
+@commands.cooldown(1, 4, commands.BucketType.user)
 async def lotto(ctx, x: str, value : int = None , Member: discord.Member = None):
   pass
 
@@ -2280,6 +2288,7 @@ async def on_message_delete(message):
     await asyncio.sleep(60)
   
 @client.command(pass_context=True)
+@commands.cooldown(1, 10, commands.BucketType.user)
 async def latency(ctx):
     before = time.monotonic()
     message = await ctx.send("Pong!")
@@ -2289,6 +2298,7 @@ async def latency(ctx):
 
 
 @client.command()
+@commands.cooldown(1, 3, commands.BucketType.user)
 async def snipe(ctx,value:int=1):
   role = discord.utils.get(ctx.guild.roles,id=826082149140004875)
   role1 = discord.utils.get(ctx.guild.roles,id=822541338175864842)
@@ -2319,6 +2329,7 @@ def rules(value):
   hi = makeembed(rules.title[value],rules.rules[value])
   return hi
 @client.command()
+@commands.cooldown(1, 3, commands.BucketType.user)
 async def rule(ctx,value:int=0):
   if value == 0 or value > 69:
     await ctx.send("Thats not a valid rule")
@@ -2616,6 +2627,7 @@ def choose():
   return [a,b,c]
 
 @client.command()
+@commands.cooldown(5, 60, commands.BucketType.channel)
 async def staff(ctx):
 
   choice = choose()
@@ -2720,6 +2732,7 @@ async def timer(ctx,timer:str=None,*,msg:str=None):
     await somemsg.delete()
   
 @client.command(aliases=["balance","bank"])
+@commands.cooldown(1, 4, commands.BucketType.user)
 async def bal(ctx,member: discord.Member = None):
   if member == None:
     member = ctx.author
@@ -2892,6 +2905,7 @@ async def gamble(ctx,amt:str=None):
 mainshop = [{"name":"smallexp","price":12000,"description":"increases 1x multiplier , good for grinding amari exp","code":"1x amari"},{"name":"rainbow","price":10000,"description":"Changes colours every 10 minutes , you can change it again if you want","code":"Rainbow"},{"name":"Mediumexp","price":100000,"description":"increases 2x multiplier , good for grinding amari exp","code":"2x amari"}]
 
 @client.command(aliases=["market","shopping"])
+@commands.cooldown(1, 10, commands.BucketType.user)
 async def shop(ctx,item:str=None):
   if item == None:
 
@@ -2912,6 +2926,7 @@ async def shop(ctx,item:str=None):
     await ctx.send(embed=makeembed("Dank Island Shop",f"**{someth['name']}** \n```Price: {someth['price']}``` \n               {someth['description']}"))
 
 @client.command(aliases=["purchase","earn"])
+@commands.cooldown(1, 10, commands.BucketType.user)
 async def buy(ctx,item:str=None):
   if item == None:
     await ctx.send('what do you even want to buy huh?')
@@ -3093,7 +3108,7 @@ class Buttons(View):
       update(self.ctx.author.id,self.ctx.author.name,self.amt,boolean=False)
       return
 @client.command()
-@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.cooldown(1, 5, commands.BucketType.user)
 async def roulette(ctx,amt:str=None):
   if amt == None:
     await ctx.send("give me a valid bet")
@@ -3224,7 +3239,7 @@ async def toggle(ctx, *, command):
             await ctx.send(embed=embed)
 
 @client.command(aliases=['lb'])
-@commands.has_permissions(manage_messages=True)
+@commands.cooldown(1, 10, commands.BucketType.user)
 async def leaderboard(ctx):
   value = currency.view()
   mylist = {}
@@ -3278,6 +3293,7 @@ async def get_error(ctx,amt):
     return -1
 
 @client.command()  
+@commands.cooldown(1, 5, commands.BucketType.user)
 async def randomuser(ctx,*, role: discord.Role):
     empty = []
     for user in ctx.guild.members:
@@ -3291,6 +3307,7 @@ async def randomuser(ctx,*, role: discord.Role):
       await ctx.send(embed=makeembed("Random Member",f"<@!{val.id}> is a random member in {role.mention}"))
 
 @client.command()
+@commands.cooldown(1, 30, commands.BucketType.user)
 async def suggest(ctx,*,message:str):
   val = suggestions.insert(ctx.author.id,message,ctx.channel.id)
   
@@ -3302,13 +3319,6 @@ async def suggest(ctx,*,message:str):
   value = await channel.send(embed=embed)
   print(val,value.id)
   suggestions.addmsg(val,value.id)
-
-
-@client.command()
-async def drop(ctx):
-  suggestions.delete_table()
-  await ctx.send("Deleted")
-  suggestions.create_table()
 
 @client.command()
 @commands.is_owner()
