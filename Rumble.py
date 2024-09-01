@@ -1,16 +1,21 @@
 import random
 import json
 def randomwanted(Names,message):
+
+    
   random_function_selector =[
-			    kill,kill,kill,kill,killyourself, killyourself,revive,revive,calm,calm]
+			    kill,kill,kill,kill,killyourself, revive,calm,calm,maketraps,maketraps,collectbullets]
   valuerecv = random.choice(random_function_selector)(Names,message)
   return valuerecv
 
 def kill(Names,message):
   with open('Dead.json') as f:
     dead = json.load(f)
-  Alive = list(Names.keys())
-  a = random.choice(Alive)
+  Alive = list(Names)
+  try:
+    a = random.choice(Alive)
+  except:
+    revive(Names,message)
   b = random.choice(Alive)
  
   if a == b:
@@ -22,7 +27,7 @@ def kill(Names,message):
   elif a != b:
     chances = random.randint(1,10)
     if chances <= 5:
-      bullet = random.randint(1,50)
+      bullet = random.randint(1,70)
       if Names[a] >= bullet:
         Names[a] = Names[a] - bullet
 
@@ -31,7 +36,7 @@ def kill(Names,message):
         Names[a] = oppobullets+Names[a]
         dead.append(b)
         print("all ok")
-        replies = [f"**{a}** killed **{b}** with {bullet} bullets and Collected all **{b}**'s bullets , now they have **{Names[a]}** bullets",f"**{a} threw a sticky grenade in air which hit right on **{b}**'s head RIP , and They found his body and Collected His bullets",f"**{a}** yeeted a sticky grenade in air which hit right on **{b}**'s face, and He found his body and Collected His bullets",f"**{a}** were shooting bullets randomly on the mountain which hit all as headshots on **{b}** RIP, They Collected all the bullets",f"YIKES. **{a}** showed no mercy and blasted **{b}** into outer-space with their gun."]
+        replies = [f"**{a}** killed **{b}** with {bullet} bullets and Collected all **{b}**'s bullets , now they have **{Names[a]}** bullets",f"**{a} threw a sticky grenade in air which hit right on **{b}**'s head RIP , and They found his body and Collected His bullets",f"**{a}** yeeted a sticky grenade in air which hit right on **{b}**'s face, and He found his body and Collected His bullets",f"**{a}** were wasting bullets randomly on the mountain which hit **{b}** badly and they died RIP, They Collected all the bullets",f"YIKES. **{a}** showed no mercy and blasted **{b}** into outer-space with their gun.",f"**{a}** killed **{b}** with a stone , what a combat master",f"**{a}** were playing codm in real life and killed **{b}** with a knife LOL"]
         val = "<:PepeKill:868508463037317210>"+random.choice(replies)
 
         json.dump(dead, open('Dead.json', 'w'))
@@ -39,7 +44,9 @@ def kill(Names,message):
         #val = "<:PepeKill:868508463037317210>"+val
         return val
       else:
-        oppobullets = random.randint(1,50)
+        oppobullets = random.randint(1,70)
+        if Names[b] < oppobullets:
+          return kill(Names,message)
         Names[a] = 0
         Names[b] = Names[b]-oppobullets
         #bulletswithme = Names[a]
@@ -57,8 +64,9 @@ def kill(Names,message):
         val = "<:PepeKill:868508463037317210>"+val
         return val
     elif chances > 5 and chances < 10 or chances == 10:
-      bullet = random.randint(1,50)
-      oppobullet = random.randint(1,50)
+      bullet = random.randint(1,70)
+      oppobullet = random.randint(1,70)
+      print(Names[a])
       if Names[a] >= bullet and Names[b] >= oppobullet:
         Names[a] = Names[a] - bullet
         Names[b] = Names[b] - oppobullet
@@ -79,27 +87,15 @@ def kill(Names,message):
         #val = "<:PepeKill:868508463037317210>"+val
         return val
       else:
-        c = random.choice(Alive)
-        if c == a or c == b:
-          return kill(Names,message)
-        cbullet = random.randint(1,50)
-        Names[c] = Names[c]-cbullet
-        del Names[a]
-        del Names[b]
-        dead.append(b)
-        dead.append(a)
-        a = f"**{a}**"
-        b = f"**{b}**"
-
-
-        replies = [f"{a} and {b} were so close to each other but didnt even see them {c} saw them and killed them with his gun RIP, but forgot to take his bullets LMAO"]
-        del c
+        Names[a] = 0
+        Names[b] = 0
+        replies = [f"{a} and {b} were both out of bullets and then they ran away LOL",f"{a} and {b} were so noob that they litteraly wasted all thier bullets",f"{a} and {b} both dont know to aim and they ended up wasting all bullets"]
         val = random.choice(replies)
         with open('Names.json', 'w') as f:
           json.dump(Names, f)
         with open('Dead.json', 'w') as f:
           json.dump(dead, f)
-        val = "<:PepeKill:868508463037317210>"+val
+        val = "<:CatCry:826795857105256449>"+val
         return val
         
         
@@ -107,7 +103,6 @@ def killyourself(Names,message):
   Alive = Names.keys()
   with open('Dead.json') as f:
     dead = json.load(f)
-  
   a = random.sample(Alive,1)
   print(a)
   a = str(a[0])
@@ -121,7 +116,7 @@ def killyourself(Names,message):
           json.dump(Names, f)
   a = f"**{a}**"
 
-  replies = [f"{a} Died Themselves Because they were sad from life",f"{a} climbed a Tall tree to hunt a Chicken but died Falling From it",f"{a} Were Throwing a Sticky Grenade but Forgot to wear nonStick Gloves , Which Exploded on Them RIP",f"A Lion was Running and saw {a} and killed them RIP"]
+  replies = [f"{a} Died Themselves Because they were sad from life",f"{a} climbed a Tall tree to hunt a Chicken but died Falling From it",f"{a} Were Throwing a Sticky Grenade but Forgot to wear nonStick Gloves , Which Exploded on Them RIP",f"A Lion was Running and saw {a} and killed them RIP",f"{a} Was trying to make a house with gravel which fell on him LOL",f"{a} tried to make a few traps for Someone , but ended up eating them himself LOL RIP"]
   val = random.choice(replies)
   del a
   val = "<:RIP:868510474008940594>"+val
@@ -162,3 +157,55 @@ def calm(Names,message):
   val = "<:Popcorn:868511638435811331>"+val
   #val = "<:heart:868509472933417030>"
   return val
+
+def maketraps(Names,message):
+  Alive = Names.keys()
+  try:
+    a = random.sample(Alive,1)
+  except ValueError:
+    return randomwanted(Names,message)
+  chances = random.randint(1,10)
+  if chances <= 5:
+    b = random.sample(Alive,1)
+    del Names[str(b[0])]
+    if a == b:
+      return maketraps(Names,message)
+    with open('Dead.json') as f:
+      dead = json.load(f)
+    dead.append(b)
+    a = str(a[0])
+    a = f"**{a}**"
+    b = str(b[0])
+    b = f"**{b}**"
+
+    replies = [f"{a} Made some food traps in {b}'s food storage and {b} ended up eating them and died rip",f"{a} decided to put a dead spider in {b}'s lunchbox",f"{a} put a bomb in {b}'s ps9 and when they played it , it exploded so hard",f"{b} was killed by poison when they picked up the tiger claw by {a}"]
+    val = random.choice(replies)
+    return "<:poison:936140340228931584>"+val
+  else:
+    b = random.sample(Alive,1)
+    if a == b:
+      return maketraps(Names,message)
+    a = str(a[0])
+    a = f"**{a}**"
+    b = str(b[0])
+    b = f"**{b}**"
+
+    replies = [f"{a} Made some food traps in {b}'s food storage and {b} Didnt eat them lol",f"{a} made poisonous traps for {b} but they survived ",f"{a} put a bomb in {b}'s ps9 And the bomb didnt work LOL",f"{b} was almost killed when they picked up the tiger claw by {a} but they used a adrealdine dose"]
+    val = random.choice(replies)
+    return "<:poison:936140340228931584>"+val
+
+def collectbullets(Names,message):
+  Alive = Names.keys()
+  try:
+    a = str(random.sample(Alive,1)[0])
+  except ValueError:
+    return randomwanted(Names,message)
+  Names[a] = Names[a]+20
+  a = f"**{a}**"
+
+  replies = [f"{a} were playing on thier ps9 and when they finished , they found some bullets on the floor",f"{a} were looking on the flowers when a reload of thier bullets were scattered",f"{a} set a bomb nearby to catch someone but they ended up finding some bullets",f"{a} were running to get a place to kill and found 20 bullets on floor COOL"]
+  val = random.choice(replies)
+  return "<:bullets:936142362038640641>"+val
+
+
+  

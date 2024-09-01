@@ -1,6 +1,7 @@
 import discord
 from discord.ui import Button,View
 from discord.ext import commands
+from discord import Option
 from replit import db
 import os
 import pyowm
@@ -68,9 +69,45 @@ def get_prefix(cleint, message):
 
 client = discord.Client()
 intents = discord.Intents.all()
-client = commands.Bot(command_prefix=get_prefix,intents=intents)
+client = commands.Bot(command_prefix=get_prefix,intents=intents,debug_guild=821575403855544370)
 client.remove_command('help')
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+
+@client.slash_command(name="guessthenumber",description="",guild_ids=[927403952029437983,821575403855544370])
+async def gtn(ctx,value1:Option(int,"The Beggining Number(to Start series from)",required=False,default=1),value2:Option(int,"The Last Number in the range",required=False,default=100)):
+	number = random.randint(value1, value2)
+	await ctx.send(f'{ctx.author.mention} wants to play a gtn , from {value1} to {value2}')
+	embed = makeembed("The Secret Number",
+	                  f"Hey The Number is {number} DONT TELL ANYONE")
+	await ctx.respond(embed=embed,ephemeral=True)
+	#await ctx.send('Event Managers Please unlock After my Next Statement')
+	await asyncio.sleep(3)
+	await ctx.send('Everythings Done go Start')
+	a = time.time()
+	b = 0
+	while (b < 400):
+		b = time.time() - a
+		#me = await client.get_user_info(f'{ctx.author.id}')
+		#await client.send(ctx.author,f"Hey The Number is {number} DONT TELL ANYONE")
+		response = await client.wait_for('message')
+		if response.content == ";end":
+			await ctx.send("Ended The Match")
+			return
+		try:
+			guess = int(response.content)
+		except:
+			#await ctx.channel.send('BREH you have to type a Number Dud')
+			guess = None
+		if guess == number:
+			embed = makeembed(
+			    "Someone Guessed the Number",
+			    f"<@{response.author.id}> guessed it right , Well Done")
+			await response.reply(embed=embed)
+			return
+    
+	await ctx.send("Man you took so long to think lel , Now try again")
+
 
 
 @client.command()
@@ -225,15 +262,12 @@ async def gtn(ctx, value: int = 1, value2: int = 100):
 	embed = makeembed("The Secret Number",
 	                  f"Hey The Number is {number} DONT TELL ANYONE")
 	await discord.DMChannel.send(user, embed=embed)
-	#await ctx.send('Event Managers Please unlock After my Next Statement')
 	await asyncio.sleep(3)
 	await ctx.send('Everythings Done go Start')
 	a = time.time()
 	b = 0
 	while (b < 400):
 		b = time.time() - a
-		#me = await client.get_user_info(f'{ctx.author.id}')
-		#await client.send(ctx.author,f"Hey The Number is {number} DONT TELL ANYONE")
 		response = await client.wait_for('message')
 		if response.content == ";end":
 			await ctx.send("Ended The Match")
@@ -241,7 +275,6 @@ async def gtn(ctx, value: int = 1, value2: int = 100):
 		try:
 			guess = int(response.content)
 		except:
-			#await ctx.channel.send('BREH you have to type a Number Dud')
 			guess = None
 		if guess == number:
 			embed = makeembed(
@@ -1208,18 +1241,18 @@ async def vote(ctx):
 	view = View()
 	view.add_item(button)
 	giveaway = makeembed(
-	    title='**❤️Support us by voting**',
+	    title='**<a:heart_poooof:853281699609837588> Support us by voting**',
 	    description=
 	    'Vote Here - [Top.gg](https://top.gg/servers/821575403855544370/vote)')
 	giveaway.add_field(
-	    name='❤️__voter Perks__',
+	    name='<a:heart_poooof:853281699609837588> __Voter Perks__',
 	    value=
-	    "➡️Role, the Island Voters \n ➡️ Access to <#839848405677244416> \n ➡️ You help us grow, which allows us to hold larger heists, giveaways, and other events.",
+	    "<a:redarrow1:927726087646105652> Role, the Island Voters \n <a:redarrow1:927726087646105652> Access to <#839848405677244416> \n <a:redarrow1:927726087646105652> You help us grow, which allows us to hold larger heists, giveaways, and other events.",
 	    inline=False)
 	giveaway.add_field(
-	    name="❤️ Other Benefits:",
+	    name="<a:heart_poooof:853281699609837588> Other Benefits:",
 	    value=
-	    "➡️ Top Voter in <#856056648723857439> will get amazing prizes \n ➡️ Noumnenon Giveaway Bypass for a week \n ➡️ Top Voter Role",
+	    "<a:redarrow1:927726087646105652> Top Voter in <#856056648723857439> will get amazing prizes \n <a:redarrow1:927726087646105652> Noumnenon Giveaway Bypass for a week \n <a:redarrow1:927726087646105652> Top Voter Role",
 	    inline=False)
 	await ctx.send(embed=giveaway,view=view)
 	pass
@@ -1419,6 +1452,31 @@ async def slap(ctx, Member1: discord.Member = None):
 	os.remove("profile.jpg")
 	await ctx.message.delete()
 
+@client.user_command(guild_ids=[821575403855544370])
+async def Slap(ctx,Member1):
+	Member = ctx.author
+
+	if Member1 == None:
+		await ctx.respond('Who are you even slapping?',ephemeral=True)
+		return
+
+	roblox = Image.open("unnamed.jpg")
+	asset = Member.avatar.with_size(128)
+	data = BytesIO(await asset.read())
+	pfp = Image.open(data)
+	#pfp = ImageOps.invert(pfp)
+	pfp = pfp.resize((134, 134))
+	roblox.paste(pfp, (161, 1))
+	#wanted.save("profile.jpg")
+	asset1 = Member1.avatar.with_size(128)
+	data1 = BytesIO(await asset1.read())
+	pfp1 = Image.open(data1)
+	pfp = pfp.resize((95, 95))
+	roblox.paste(pfp1, (316, 123))
+	roblox.save("profile.jpg")
+	await ctx.respond(file=discord.File("profile.jpg"))
+	os.remove("profile.jpg")
+
 
 	#mymap = folium.Map(location=[180, 90],tiles='Stamen Terrain')
 	#mymap.save('Map.html')
@@ -1451,7 +1509,6 @@ async def nuke(ctx):
     nukeembed.set_footer(text = 'Dank Island ',icon_url='https://cdn.discordapp.com/icons/821575403855544370/a_85c6630c72154018ecc7740c58411dea.gif?size=128')
     nukeembed.timestamp = datetime.datetime.utcnow()
     mymsg = await ctx.send(embed=nukeembed)
-    pass
     while mnumber<=100:
       nukeembed = discord.Embed(
         title='** Nuke The Server **',
@@ -1579,16 +1636,18 @@ class MyView(View):
         Names = json.load(f)
       randomclr = random.choice(mlist)
       print(len(list(Names)))
-      while len(list(Names)) >= 2:
+      roundn = 1
+      while len(list(Names)) > 1:
         time.sleep(5)
         val = randomwanted(Names, "")
-        if len(list(Names)) >= 2:
+        if len(list(Names)) > 2:
           val2 = randomwanted(Names, "")
         else:
-          val2 = "Looks like a winner is to be announced"
-        hello = makeembed(title="**Match in Progress**",
+          val2 = "Next round theres a winner 🎉"
+        hello = makeembed(title=f"**Round {roundn}**",
 				                  description=f"{val}\n {val2} \n ```Players alive:{len(list(Names))}```")
         await interaction.channel.send(embed=hello)
+        roundn=roundn+1
       val = str(list(Names)).replace("[","").replace("]","").replace("'","")
       hi = makeembed(
 			    title="**Match Ended**",
@@ -1646,6 +1705,44 @@ async def battlebot(ctx,value:int=5):
   b = 0
   await ctx.send(
 			    f"A Match has started react now ,``` Joined = {len(Names)}``` ",view=view)
+
+@client.slash_command(guild_ids=[821575403855544370],name="battlebot",description="Play battle in with some virtual bots")
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def battlebot(ctx,value:Option(int,"The Number of bots",required=False,default=5)):
+  if value > 10:
+    await ctx.send("DONT Try FLOOD THE BOT LIKE THAT NOOB")
+    return
+  Names = {}
+  def check(m):
+    if m.channel == ctx.channel:
+      return m.channel == ctx.channel
+  prefixes = json.load(open('prefixes.json','r'))
+  dead = [ctx.author.name]
+  json.dump(dead, open('Dead.json', 'w'))
+  
+  view = MyView()
+  for i in range(1,value+1):
+    num = str(i)
+    Name = "Bot"+num
+    Names[Name] = 50
+  json.dump(Names, open('Names.json', 'w'))
+  a = time.time()
+  b = 0
+  await ctx.respond(
+			    f"{ctx.author.mention} wants to play a battle react now ,``` Joined = {len(Names)}``` ",view=view)
+
+
+@client.slash_command(guild_ids=[821575403855544370])
+@commands.has_permissions(kick_members=True)
+async def timeout(ctx,user:Option(discord.Member,"Member to timeout",required=True,default=None),time:Option(str,"The user you want to wish",required=False,default="60s")):
+  time = convert(time)
+  if time == -1:
+    await ctx.respond("Wrong Unit given",ephemeral=True)
+    return
+  elif time == -2:
+    await ctx.respond("Give a valid unit",ephemeral=True)
+  await user.timeout_for(datetime.timedelta(seconds=20),reason=f"timeout by {ctx.author.name}")
+  await ctx.respond(f"{ctx.author.mention} timeouted {user.mention} for {stotime(time)}")
   """while (b <= 30):
     b = time.time() - a
     response = await client.wait_for('message',check=check)
@@ -1734,11 +1831,16 @@ async def on_message(message):
         print(msg)
         if "&" in msg:
           return      
-      await message.channel.send(f"i cant even imagine{msg}, bro")
+      value = await message.channel.send(f"i cant even imagine{msg}, bro")
+      time.sleep(5)
+      await value.delete()
+      
     except:
       await message.channel.send("Breh what are you ebven imagining")
   if message.content.startswith("no u"):
-    await message.channel.send("no you")
+    value = await message.channel.send("no you")
+    time.sleep(5)
+    await value.delete()
   if message.content.startswith(".donate"):
     await message.channel.send("**Item donations** must be sent to <@!796257057723777045> and **cash donations** must be sent to <@!843803189346435072>")
 
@@ -2025,7 +2127,7 @@ async def ad(ctx,value:int=None,Member:discord.Member=None):
 		for _ in range(value):
 			val = Lottery.insert(Member.name,Member.id)
 			somestr = somestr + f"`{str(val)}`" + ","
-		await ctx.send(f"Successfully added tickets to that user, thier number is/are {somestr}")
+		await ctx.send(f"Successfully added tickets to that user, their number is/are {somestr}")
 		await channel1.send(f"{Member.mention}'s entry no/s: {somestr.rstrip(',')}")
 @lotto.command(aliases=["rem","remove"])
 @commands.has_permissions(ban_members=True)
@@ -2283,9 +2385,12 @@ snipe_message_content = []
 
 @client.event
 async def on_message_delete(message):
+  if not message.author.bot:
     snipe_message_content.append(message)
 
     await asyncio.sleep(60)
+  else:
+    pass
   
 @client.command(pass_context=True)
 @commands.cooldown(1, 10, commands.BucketType.user)
@@ -2298,17 +2403,15 @@ async def latency(ctx):
 
 
 @client.command()
+@commands.has_any_role(844608008763342848,826082149140004875,822541338175864842)
 @commands.cooldown(1, 3, commands.BucketType.user)
 async def snipe(ctx,value:int=1):
-  role = discord.utils.get(ctx.guild.roles,id=826082149140004875)
-  role1 = discord.utils.get(ctx.guild.roles,id=822541338175864842)
-  if role in ctx.author.roles or role1 in ctx.author.roles:
-    if snipe_message_content==[]:
-        await ctx.send("Theres nothing to snipe.")
-    else:
         value = value-value-value
-
-        myvalue = snipe_message_content[value]
+        try:
+          myvalue = snipe_message_content[value]
+        except:
+          await ctx.send("Theres nothing to snipe")
+          return
         val = datetime.datetime.now().minute - myvalue.created_at.minute 
         val = val*60
         val2 = datetime.datetime.now().hour - myvalue.created_at.hour
@@ -2321,8 +2424,6 @@ async def snipe(ctx,value:int=1):
         embed.set_author(name= f"{myvalue.author.name}#{myvalue.author.discriminator}",icon_url=myvalue.author.avatar.url)
         await ctx.send(embed=embed)
         return
-  else:
-    await ctx.send("You need Server Booster/Staff role to use this command")
 def rules(value):
   rules.title = {"1":"**__Respect Others__**","2":"**__No Inappropriate Language__**","3":"**__No Pornographic and Gore__**","4":"**__No Spamming__**","5":"**__Keep The Use of Channels for Their Purposes__**","6":"**__No Impersonation__**","7":"__**No Scamming**__","11":"**__Asking for Promos__**","69":"Maple and raine gae","8":"**__No Begging__**","9":"__**No Advertising**__","10":"__**Mentions**__"}
   rules.rules = {"1":"Treat others the way you wanted to be treated. Discrimination, racism, feminism, stereotyping, and other forms of disrespect will not be tolerated.","2":"Using of profane language is allowed but must be kept at minimum and it should not point at someone. Throwing profanity and insulting words against someone will not be tolerated and might result to harsh punishment.","3":"This is a SFW server. Pornographic or anything that contains violence is not allowed.","4":"Spamming or anything that is considered repetitive is not strictly allowed. Do not disrupt chat.","5":"Do not use channels for anything but their intended purposes.","6":"Whoever it may be, impersonation is strictly not allowed. Impersonating someone within the server may result to punishment.","7":"Scamming or attempting to scam is strictly prohibited.","11":"Asking for promos may get staff demoted , So Staff Shouldn't ask for promos","69":"Akash is best staff ngl","8":"Do not beg for anything! Not dank memer coins, not nitros, not roles. ","9":"Do not advertise anything within the server or in other members' DMs unless you are given the permission to do so.","10":"Do not mention users without a good reason and do not ping any of the staffs more than once for a question or concerns. If you have any concern, go to <#839487324920348673>"}
@@ -2826,7 +2927,7 @@ async def give(ctx,member : discord.Member = None , amt : str = None):
   await ctx.send(embed=makeembed("Amount Transfer",f"{ctx.author.mention} gave {amt} to {member.mention}"))
 
 @client.command(aliases=["stop","shutdown"])
-@commands.has_role('Admin')
+@commands.has_role('Litteraly Akashdeep')
 async def dead(ctx):
   await ctx.send("Ok i logged off")
   print(ctx.author.name,"made me log off ")
@@ -2902,7 +3003,7 @@ async def gamble(ctx,amt:str=None):
 
 
   
-mainshop = [{"name":"smallexp","price":12000,"description":"increases 1x multiplier , good for grinding amari exp","code":"1x amari"},{"name":"rainbow","price":10000,"description":"Changes colours every 10 minutes , you can change it again if you want","code":"Rainbow"},{"name":"Mediumexp","price":100000,"description":"increases 2x multiplier , good for grinding amari exp","code":"2x amari"}]
+mainshop = [{"name":"smallexp","price":7000,"description":"increases 1x multiplier , good for grinding amari exp EXCEPT its just for a hour hehehe","code":"1x amari"},{"name":"rainbow","price":20000,"description":"Changes colours every 10 minutes , you can change it again if you want","code":"Rainbow"},{"name":"Mediumexp","price":70000,"description":"increases 2x multiplier , good for grinding amari exp, EXCEPT its just for a hour hehehe","code":"2x amari"}]
 
 @client.command(aliases=["market","shopping"])
 @commands.cooldown(1, 10, commands.BucketType.user)
@@ -2957,6 +3058,8 @@ async def rainbowgib(user,rolename):
   print("ok")
   role = discord.utils.get(guild.roles, name=(rolename))
   await user.add_roles(role)
+  asyncio.sleep(3600)
+  await user.remove_roles(role)
 
 
   
@@ -3221,7 +3324,7 @@ async def remdev(ctx,amount:str=None,member:discord.Member=None):
   update(member.id,member.name,val,boolean=False)
 
 @client.command()
-@commands.is_owner()
+@commands.has_role("Litteraly Akashdeep")
 async def toggle(ctx, *, command):
   command = client.get_command(command)
 
@@ -3259,38 +3362,7 @@ async def leaderboard(ctx):
     y = y+1
   mystr.rstrip(",")
   await ctx.send(embed=makeembed('Dank Island Money Leaderboard',mystr))
-async def get_error(ctx,amt):
-  val = viewnum(ctx.author.id)
-  if val == []:
-    await ctx.send("You dont have any money kiddo")
-    return -1
-  if amt == None:
-    await ctx.send("Mention Amount as well")
-    return -1
-  if "e" in amt:
-    amt = seperate(amt)
-    if amt == -2:
-      await ctx.send("Please mention a valid Number")
-      return -1
-    return amt
-  elif "k" in amt:
-    amt = amt.replace("k","")
-    amt = int(amt)*1000
-    print(amt)
-    return amt
-  else:
-    try:
-      amt = int(amt)
-      return amt
-    except:
-      await ctx.send("Send a Number Please")
-      return -1
-  if amt<0:
-    await ctx.send("Please give me a valid amount")
-    return -1
-  if val[0][2] < amt:
-    await ctx.send("You dont have that much money")
-    return -1
+
 
 @client.command()  
 @commands.cooldown(1, 5, commands.BucketType.user)
@@ -3321,7 +3393,7 @@ async def suggest(ctx,*,message:str):
   suggestions.addmsg(val,value.id)
 
 @client.command()
-@commands.is_owner()
+@commands.has_role('Litteraly Akashdeep')
 async def accept(ctx,id:int,*,reason:str=""):
   channel = client.get_channel(927077530282885171)
   val = suggestions.viewspl(id)
@@ -3354,7 +3426,7 @@ async def accept(ctx,id:int,*,reason:str=""):
 
 
 @client.command()
-@commands.is_owner()
+@commands.has_role('Litteraly Akashdeep')
 async def consider(ctx,id:int,*,reason:str=""):
   channel = client.get_channel(927077530282885171)
   val = suggestions.viewspl(id)
@@ -3406,7 +3478,7 @@ async def status(ctx,id:int):
   await ctx.send(embed=embed)
 
 @client.command()
-@commands.is_owner()
+@commands.has_role('Litteraly Akashdeep')
 async def deny(ctx,id:int,*,reason:str):
   channel = client.get_channel(927077530282885171)
   val = suggestions.viewspl(id)
@@ -3437,6 +3509,221 @@ async def deny(ctx,id:int,*,reason:str):
   await message.edit(embed=embed)
   await ctx.send("Successfully Denied that")
     
+@client.command()
+@commands.has_role('Litteraly Akashdeep')
+async def flex(ctx):
+  await ctx.send("Akashdeep is Flexing on You All Being the Bot Owner")
 
+
+class SplitSteal(View):
+  def __init__(self,member1,member2,amt):
+    super().__init__(timeout=30)
+    self.member1 = member1
+    self.member2 = member2
+    self.amt = amt
+  @discord.ui.button(label="Split",style=discord.ButtonStyle.green)
+  async def button_callback(self,button,interaction):
+    print(interaction.user.id,self.member1.id)
+    if self.member1.id != interaction.user.id:
+      if self.member2.id != interaction.user.id:
+        await interaction.response.send_message("Only the Fighters can use this button",ephemeral=True)
+        return
+    with open("splisteal.json") as f:
+      values = json.load(f)
+    try:
+      if values[str(interaction.user.id)] in ["Split","Steal"] or values[str(interaction.user.id)] in ["Split","Steal"]:
+        await interaction.response.send_message("You have already given your choice",ephemeral=True)
+        return
+    except:
+      pass
+    values[str(interaction.user.id)] = "Split"
+    if len(values) == 2:
+      json.dump(values, open('splisteal.json', 'w'))
+      await interaction.response.edit_message(view=None)
+      await interaction.followup.send("You have Successfully given your choice",ephemeral=True)
+      await interaction.followup.send(f"{interaction.user.mention} has given their choice")
+
+      await win(interaction.channel,interaction.guild,values,self.amt)
+      return
+
+    json.dump(values, open('splisteal.json', 'w'))
+    await interaction.response.send_message(f"{interaction.user.mention} has given their choice",ephemeral=True)
+    await interaction.followup.send("You have Successfully given your choice",ephemeral=True)
+
+  @discord.ui.button(label="Steal",style=discord.ButtonStyle.red)
+  async def button_callback2(self,button,interaction):
+    if self.member1.id != interaction.user.id:
+      if self.member2.id != interaction.user.id:
+        await interaction.response.send_message("Only the Fighters can use this button",ephemeral=True)
+        return
+    with open("splisteal.json") as f:
+      values = json.load(f)
+    try:
+      if values[str(interaction.user.id)] in ["Split","Steal"] or values[str(interaction.user.id)] in ["Split","Steal"]:
+        await interaction.response.send_message("You have already given your choice",ephemeral=True)
+        return
+    except:
+      pass
+    values[str(interaction.user.id)] = "Steal"
+    if len(values) == 2:
+      json.dump(values, open('splisteal.json', 'w'))
+      await interaction.response.edit_message(view=None)
+      await interaction.followup.send("You have Successfully given your choice",ephemeral=True)
+      await interaction.followup.send(f"{interaction.user.mention} has given their choice")
+
+      await win(interaction.channel,interaction.guild,values,self.amt)
+      return
+    json.dump(values, open('splisteal.json', 'w'))
+    await interaction.response.send_message(f"{interaction.user.mention} has given their choice",ephemeral=True)
+    await interaction.followup.send("You have Successfully given your choice",ephemeral=True)
+
+class YesNo(View):
+  def __init__(self,member1,member2,ctx):
+    super().__init__(timeout=30)
+    self.member1 = member1
+    self.member2 = member2
+    self.ctx = ctx
+    self.value = False
+  @discord.ui.button(label="Yes",style=discord.ButtonStyle.green)
+  async def button_callback(self,button,interaction):
+    if self.member2.id == interaction.user.id:
+      await interaction.response.send_message("Let your partner use this...",ephemeral=True)
+      return
+    if self.member1.id != interaction.user.id:
+        await interaction.response.send_message("Let the Fighter Use it himself",ephemeral=True)
+    self.value = True
+    self.stop()
+    
+
+  @discord.ui.button(label="No",style=discord.ButtonStyle.red)
+  async def button_callback2(self,button,interaction):
+    if self.member1.id != interaction.user.id:
+        await interaction.response.send_message("Only the Fighters can use this button",ephemeral=True)
+        return
+    with open("splisteal.json") as f:
+      values = json.load(f)
+    self.value == False
+    self.stop()
+
+
+@client.command(aliases=["ss"])
+async def splitsteal(ctx,member1:discord.Member=None,amt:str=None):
+  if member1 == None:
+    await ctx.send("imagine fighting Yourself")
+    return
+  if amt == None:
+    amt == -1
+  else:
+    view = YesNo(ctx.author,member1,ctx)
+    val = await ctx.send(f"Select if You wanna play {ctx.author.mention}",view=view)
+    val = await view.wait()
+    if val == True:
+      await ctx.send(f"{ctx.author.mention} took so long to reply")
+      return
+    print(view.value)
+    if view.value == False:
+      await ctx.send(f"{ctx.author.mention} declined the Fight")
+      return
+    
+    view = YesNo(member1,ctx.author,ctx)
+
+    await ctx.send(f"Select if You wanna play {member1.mention}",view=view)
+    val = await view.wait()
+    if val == True:
+      await ctx.send(f"{member1.mention} took so long to reply")
+      return
+    print(view.value)
+    if view.value == False:
+      await ctx.send(f"{member1.mention} declined the Fight")
+      return
+
+    amt = await get_error(ctx,amt)
+    val = viewnum(ctx.author.id)
+    val1 = viewnum(member1.id)
+    if val[0][2] < amt or val1[0][2] < amt:
+        await ctx.send("One of you does not have enough money")
+        return -1
+    if amt == -1:
+        return
+  
+  json.dump({}, open('splisteal.json', 'w'))
+
+
+  view = SplitSteal(ctx.author,member1,amt)
+  val = await ctx.send("Lets see who wins",view=view)
+async def win(channel,guild,values,amt):
+  mlist = []
+  for x in list(values):
+    mlist.append(await client.fetch_user(int(x)))
+  if values[str(mlist[0].id)] == "Split" and values[str(mlist[1].id)] == "Split":
+    if amt == -1:
+      embed = makeembed("SplitSteal game","Both Picked Split")
+    else:
+      embed = makeembed("SplitSteal game","Both Picked Split, And got thier money back")
+    await channel.send("Match Results",embed=embed)
+      
+  elif values[str(mlist[0].id)] == "Steal" and values[str(mlist[1].id)] == "Split":
+    if amt == -1:
+      embed = makeembed("SplitSteal game",f"{mlist[0].mention} picked up Steal and won")
+    else:
+      embed = makeembed("SplitSteal game",f"{mlist[0].mention} picked up Steal and won {amt*2} <a:DIcoin:922797912977719368>")
+      update(mlist[0].id,mlist[0].name,amt)
+      update(mlist[1].id,mlist[1].name,amt,boolean=False)
+    await channel.send("Match Results",embed=embed)
+      
+    await channel.send(f"{mlist[0].mention} picked up Steal and won")
+  elif values[str(mlist[0].id)] == "Split" and values[str(mlist[1].id)] == "Steal":
+    if amt == -1:
+      embed = makeembed("SplitSteal game",f"{mlist[1].mention} picked up Steal and won")
+    else:
+      embed = makeembed("SplitSteal game",f"{mlist[1].mention} picked up Steal and won {amt*2} <a:DIcoin:922797912977719368>")
+      update(mlist[1].id,mlist[1].name,amt)
+      update(mlist[0].id,mlist[0].name,amt,boolean=False)
+    await channel.send("Match Results",embed=embed)
+  else:
+    if amt == -1:
+      embed = makeembed("SplitSteal game",f"Both Picked up Steal LMFAO")
+    else:
+      embed = makeembed("SplitSteal game",f"Both Picked up Steal LMFAO and lost {amt} each <a:DIcoin:922797912977719368>")
+      update(mlist[1].id,mlist[1].name,amt,boolean=False)
+      update(mlist[0].id,mlist[0].name,amt,boolean=False)
+    await channel.send("Match Results",embed=embed)
+  
+async def get_error(ctx,amt):
+  val = viewnum(ctx.author.id)
+  if val == []:
+    await ctx.send("You dont have any money kiddo")
+    return -1
+  if amt == None:
+    await ctx.send("Mention Amount as well")
+    return -1
+  if "e" in amt:
+    amt = seperate(amt)
+    if amt == -2:
+      await ctx.send("Please mention a valid Number")
+      return -1
+    return amt
+  elif "k" in amt:
+    amt = amt.replace("k","")
+    amt = int(amt)*1000
+    print(amt)
+    return amt
+  else:
+    try:
+      amt = int(amt)
+      return amt
+    except:
+      await ctx.send("Send a Number Please")
+      return -1
+  if amt<0:
+    await ctx.send("Please give me a valid amount")
+    return -1
+  if val[0][2] < amt:
+    await ctx.send("You dont have that much money")
+    return -1
+
+@client.command()
+async def marydance(ctx):
+  await ctx.send("<a:MaryDance:860543886722990110>")
 keep_alive()
 client.run(os.environ['TOKEN'])
